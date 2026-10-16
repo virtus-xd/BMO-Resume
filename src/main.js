@@ -12,6 +12,7 @@ import { SKY_SVG, WALL_SVG, ROOM_SVG, FRONT_SVG, SLOTS } from "./scene/room.svg.
 import { initParallax } from "./scene/parallax.js";
 import { SLICES, sliceForHour, applySlice } from "./scene/daycycle.js";
 import { initParticles } from "./scene/particles.js";
+import { initObjects } from "./scene/objects.js";
 import { BMO_SVG } from "./bmo/bmo.svg.js";
 import { createFace } from "./bmo/faces.js";
 import { initBehavior } from "./bmo/behavior.js";
@@ -52,6 +53,7 @@ const faceEl = $("#bmo-face");
 const face = createFace(faceEl);
 face.setBase("idle");
 const bmo = initBehavior({ bmoEl: $("#bmo"), faceEl, face, bus, state, reduced });
+initObjects({ root: document, bus, state, reduced });
 
 /* --- ses + konuşma --- */
 const sfx = createSfx();
