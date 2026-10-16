@@ -18,6 +18,7 @@ import { t, pickLang, applyI18n } from "./data/i18n.js";
 import { PROJECTS, assignSlots } from "./data/projects.js";
 import { SLOTS } from "./scene/room.svg.js";
 import { createTapes, placeTapes, bindDrag } from "./tapes/tape.js";
+import { insertTape, ejectTape, missTape } from "./tapes/choreo.js";
 
 const $ = (s) => document.querySelector(s);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -82,9 +83,37 @@ const handlers = {
 placed.forEach(({ project }) => bindDrag(tapes[project.id], project, handlers));
 document.addEventListener("tape:pick", () => bus.emit("sfx", "pick"));
 
-/* Görev 9'da değiştirilecek geçici akış */
-function play(p, ghost) { ghost?.remove(); tapes[p.id].classList.remove("gone"); console.info("play", p.id); }
-function miss(p, ghost) { ghost?.remove(); tapes[p.id].classList.remove("gone"); }
+/* --- akış: busy kilidi yalnızca burada --- */
+const choreo = { tapes, bus, state, reduced, stageEl: $("#l2") };
+
+async function play(p, ghost) {
+  if (state.busy) { ghost?.remove(); return; }
+  if (state.current?.id === p.id) { ghost?.remove(); tapes[p.id].classList.add("gone"); return; }
+  state.busy = true;
+  try {
+    if (state.current) await ejectTape(state.current, choreo, { quick: true });
+    await insertTape(p, ghost, choreo);
+  } finally { state.busy = false; }
+}
+
+async function eject() {
+  if (state.busy || !state.current) return;
+  state.busy = true;
+  try {
+    const p = state.current;
+    await ejectTape(p, choreo);
+    bus.emit("say", t(state.lang, "ejected"));
+    tapes[p.id].focus({ preventScroll: true });
+  } finally { state.busy = false; }
+}
+
+function miss(p, ghost) { missTape(p, ghost, choreo); }
+
+bus.on("tape:loaded", (p) => sfx.startLoop(p.id));
+bus.on("tape:ejected", () => sfx.stopLoop());
+
+/* Görev 10'da BMO ekranındaki ⏏ düğmesiyle değişecek geçici çıkarma kısayolu */
+addEventListener("keydown", (e) => { if (e.key === "Escape") eject(); });
 
 bus.emit("say", t(state.lang, "welcome"));
 

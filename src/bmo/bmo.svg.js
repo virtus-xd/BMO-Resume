@@ -17,12 +17,13 @@ export const BMO_SVG = `
     <g id="bmo-slot">
       <rect id="bmo-slot-glow" x="58" y="192" width="172" height="46" rx="12"/>
       <rect class="bmo-slot-hole o" x="66" y="200" width="156" height="30" rx="6"/>
+      <rect id="bmo-lid" class="bmo-lid o" x="66" y="200" width="156" height="30" rx="6"/>
+      <!-- kapağın üstünde: kaset takılıyken pencereden makaralar görünür -->
       <g id="bmo-reels" opacity="0">
         <rect class="reel-win" x="104" y="206" width="80" height="18" rx="9"/>
         <g class="reel" id="bmo-reel-l"><circle cx="118" cy="215" r="7"/><path d="M118 208v14M111 215h14"/></g>
         <g class="reel" id="bmo-reel-r"><circle cx="170" cy="215" r="7"/><path d="M170 208v14M163 215h14"/></g>
       </g>
-      <rect id="bmo-lid" class="bmo-lid o" x="66" y="200" width="156" height="30" rx="6"/>
     </g>
     <path class="bmo-dpad o" d="M74 254h22v-22h22v22h22v22h-22v22h-22v-22h-22Z"/>
     <path class="bmo-tri o" d="M182 286l16-28 16 28Z"/>

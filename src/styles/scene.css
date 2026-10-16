@@ -109,3 +109,4 @@ body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-bo
 .contact { position: absolute; left: -10%; right: -10%; bottom: -.35em; height: .8em; border-radius: 50%; background: radial-gradient(closest-side, rgba(30, 10, 2, .5), transparent); z-index: -1; }
 .ghost { position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none; transform-origin: 50% 50%; filter: drop-shadow(0 12px 8px rgba(20, 6, 0, .45)); }
 .ghost .easel { display: none; }
+.note { position: absolute; z-index: 4; font-family: var(--f-hand); font-size: 34px; color: var(--paper); -webkit-text-stroke: 1.6px var(--ink); pointer-events: none; }
