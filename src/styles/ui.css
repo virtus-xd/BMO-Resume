@@ -1,0 +1,9 @@
+/* --- konuşma balonu --- */
+.speech { position: fixed; z-index: 12; max-width: min(340px, calc(100vw - 32px)); padding: 12px 16px 10px; background: var(--paper); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 22px 22px 22px 6px; box-shadow: 0 5px 0 rgba(30, 10, 2, .35); pointer-events: none; }
+.speech::before { content: ""; position: absolute; left: -14px; bottom: 8px; width: 18px; height: 18px; background: var(--paper);
+  border-left: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: skewY(-35deg); }
+.speech p { margin: 0; font-family: var(--f-hand); font-size: 22px; line-height: 1.15; min-height: 1.15em; }
+.speech small { display: block; margin-top: 6px; font-size: 12px; font-weight: 700; color: #7a5a40; }
+.speech.docked { left: 16px; right: 16px; top: calc(76px + env(safe-area-inset-top, 0px)); max-width: none; border-radius: 18px; }
+.speech.docked::before, .speech.docked small { display: none; }
