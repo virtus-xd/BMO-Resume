@@ -1,0 +1,9 @@
+html, body { height: 100%; margin: 0; }
+body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-body); overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; transition: background-color .6s; }
+.room { position: fixed; inset: 0; overflow: hidden; }
+.stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; }
+.camera { position: absolute; inset: 0; transform-origin: 0 0; }
+.layer { position: absolute; inset: 0; }
+.layer > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tint { position: absolute; inset: 0; pointer-events: none; background: var(--tint-c); opacity: var(--tint); mix-blend-mode: multiply; transition: opacity .6s, background-color .6s; }
+.vignette { position: absolute; inset: -2px; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 55%, transparent 55%, rgba(28, 10, 3, .5)); }
