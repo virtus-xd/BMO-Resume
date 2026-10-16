@@ -56,3 +56,25 @@ body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-bo
 @media (prefers-reduced-motion: reduce) {
   .cloud, .glow { animation: none; }
 }
+
+/* --- BMO --- */
+.bmo { position: absolute; left: 816px; top: 560px; width: 300px; height: 420px; z-index: 2; cursor: pointer; }
+.bmo > svg { width: 100%; height: 100%; overflow: visible; }
+.bmo-front { fill: var(--bmo); } .bmo-side { fill: var(--bmo-dk); }
+.bmo-screen { fill: var(--bmo-screen); }
+.bmo-slot-hole { fill: var(--ink); } .bmo-lid { fill: var(--bmo-dk); }
+.bmo-dpad { fill: var(--dpad); } .bmo-tri { fill: var(--tri); } .bmo-green { fill: var(--btn-g); } .bmo-red { fill: var(--btn-r); }
+.bmo-slit { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.bmo-shadow { fill: rgba(40, 16, 4, .35); }
+.limb path { fill: none; stroke: var(--ink); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+#bmo-slot-glow { fill: none; stroke: #ffd98a; stroke-width: 8; opacity: 0; transition: opacity .2s; filter: drop-shadow(0 0 8px #ffd98a); }
+.bmo.hungry #bmo-slot-glow { opacity: 1; }
+.reel-win { fill: #6b3f22; }
+.reel circle { fill: #e9dcc0; stroke: var(--ink); stroke-width: 3; }
+.reel path { stroke: var(--ink); stroke-width: 3; }
+#bmo-face .f { fill: var(--bmo-face); }
+#bmo-face .fs { fill: none; stroke: var(--bmo-face); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+#bmo-face .shine { fill: var(--bmo-screen); }
+#bmo-face .blush { fill: #f49ab0; opacity: .7; }
+#bmo-face .mono { font-family: var(--f-term); font-size: 30px; }
+#bmo-face .eyes { transform: translate(var(--ex, 0px), var(--ey, 0px)); transition: transform .12s; }
