@@ -16,8 +16,8 @@ ulaşmak.
 
 | Konu | Karar |
 |---|---|
-| Arka plan | Kullanıcının ürettiği yüksek çözünürlüklü (≥ 3840×2160, 16:9) boyanmış ağaç ev illüstrasyonu: `bg-day` + isteğe bağlı `bg-night`. Görsel yoksa geçici olarak düz sıcak gradyan. |
-| BMO | three.js ile kodla üretilmiş 3D model (spike'ta doğrulandı): yuvarlatılmış gövde, çizgi film (toon) gölgelendirme, ters kabuk kontur, ekran yüzü canvas dokusu, yan yüzde "BMO" + hoparlör delikleri, oturan poz. |
+| Arka plan | **bg2** (kullanıcı seçti): mürekkep çizgili ağaç ev illüstrasyonu, 2752×1536 (16:9'a yakın, 1.79). Gündüz görseli olarak kullanılır; gece versiyonu (`bg2` gece düzenlemesi) gelirse çapraz geçiş, gelmezse renk filtresi. bg1 ve spike denemeleri (`spike/deneme-bg*.png`) referans olarak kalır. |
+| BMO | three.js ile **kodla, yüksek detayla** üretilmiş 3D model (Meshy yerine — gerekçe: animasyonlu parçalar, küçük dosya, stil uyumu). Ayrıntılar §4. |
 | Kasetler | three.js 3D kasetler; zeminde perspektifle durur. Etiket 2 satıra kadar sığar (kesilme yok); projede ekran görüntüsü varsa etiketin yerine kapak görseli. |
 | Konuşma | Örnekteki gibi altta **terminal tarzı diyalog kutusu** (`> BMO: …`, VT323, koyu zemin, yeşil metin); v1'in balonunun yerini alır. |
 | Kamera zoom | Gerçek 3D kamera hareketi (GSAP ile `camera.position` + bakış noktası) BMO ekranına; arka plan görseli aynı anda büyür ve bulanıklaşır. |
@@ -44,6 +44,19 @@ ulaşmak.
 ## 4. 3D BMO (`src/three/bmo.js`)
 
 - Spike'taki model temel alınır (`spike/bmo3d.js`); modül olarak yeniden yazılır, testli.
+- **Detay seviyesi (kullanıcı isteği: "mümkün olduğunca detaylı, birebir"):**
+  - Gövde: dizideki oranlar (en:boy:derinlik ≈ 1 : 1.25 : 0.62), pahlı/yuvarlatılmış kenarlar, ön yüz ile yanlar arasında ton farkı,
+    kenarlarda ince ışık parlaması (rim light).
+  - Ekran: koyu çerçeve + iç gölge, ekran camında yumuşak yansıma şeridi, hafif tarama çizgisi; yüz ifadeleri canvas'ta.
+  - Ön yüz: kaset yuvası (koyu, iç derinlikli) + açılır kapak; sarı D-pad (kabartmalı), mavi üçgen, yeşil küçük ve kırmızı büyük
+    düğme (kabartmalı, parlak nokta), D-pad altında iki ızgara yarığı.
+  - Yan yüzler: sol yanda dikey "BMO" yazısı + 3×3 hoparlör delikleri; sağ yanda kulaklık/şarj portu ve küçük yan düğme.
+  - Arka yüz: vida başlıkları ve pil kapağı çizgisi (zoom/dönüşlerde görünürse).
+  - Uzuvlar: ince, eklemli kollar (omuz–dirsek–el; el yuvarlak, başparmak ayrımı) ve bacaklar (ayak tabanı düz, öne bakan);
+    oturuş pozunda bacaklar önde, eller yere dayalı.
+  - Zemin: yumuşak temas gölgesi (ambient occlusion benzeri koyu halka) + uzun yönlü gölge, arka planın ışık yönüne uygun
+    (bg2'de ışık sağdaki pencereden).
+  - Stil: toon gölgelendirme (3 basamak) + mürekkep kontur; kontur kalınlığı bg2'nin çizgi kalınlığına göre ayarlanır.
 - **Yüz:** v1'in ifade adları korunur (`idle, blink, hungry, talkA, talkB, happy, sad, giggle, loading`); her biri ekran canvas'ına
   çizen bir fonksiyon. v1'in `createFace` mantığı (temel/flash/konuşma önceliği) renderer'dan bağımsız hale getirilip yeniden kullanılır.
 - **Davranışlar:** nefes, göz kırpma, göz bebeklerinin fareyi izlemesi (canvas'ta ±4 px), boşta dans/mırıldanma, el sallama,
@@ -102,5 +115,6 @@ ulaşmak.
 
 ## 11. Açık bağımlılık
 
-Arka plan görselleri (`bg-day`, `bg-night`) kullanıcıdan gelecek. Görsel gelene kadar geçici gradyan ile çalışılır; kalibrasyon
-görsel geldiğinde yapılır ve kullanıcıya ekran görüntüsüyle onaylatılır (stil durağı).
+Gündüz görseli hazır (`bg2.jpg`; uygulamada WebP'ye çevrilip `public/bg/` altına 1920 ve 2752 px sürümleriyle konur). Gece
+versiyonu kullanıcıdan gelecek; gelene kadar renk filtresi kullanılır. Kalibrasyon (kamera açısı bg2'nin daha alçak perspektifine
+göre, BMO ortadaki boş zeminde, kasetler zemin boşluklarında) yapılıp kullanıcıya ekran görüntüsüyle onaylatılır (stil durağı).
