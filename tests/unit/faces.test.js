@@ -1,29 +1,34 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createFace } from "../../src/bmo/faces.js";
-
-const FAKE = { idle: "I", blink: "B", hungry: "H", talkA: "TA", talkB: "TB", happy: "HP", sad: "S", giggle: "G", loading: "L" };
+import { createFace, FACE_NAMES } from "../../src/bmo/faces.js";
 
 describe("createFace", () => {
-  let el, face;
-  beforeEach(() => { vi.useFakeTimers(); el = document.createElement("div"); face = createFace(el, FAKE); });
+  let render, face;
+  beforeEach(() => { vi.useFakeTimers(); render = vi.fn(); face = createFace(render); });
   afterEach(() => vi.useRealTimers());
 
-  it("setBase yüzü çizer", () => { face.setBase("idle"); expect(el.innerHTML).toBe("I"); });
+  it("setBase yüzü çizdirir", () => { face.setBase("idle"); expect(render).toHaveBeenLastCalledWith("idle"); });
   it("flash süre dolunca temel yüze döner", () => {
     face.setBase("happy"); face.flash("blink", 130);
-    expect(el.innerHTML).toBe("B");
+    expect(render).toHaveBeenLastCalledWith("blink");
     vi.advanceTimersByTime(131);
-    expect(el.innerHTML).toBe("HP");
+    expect(render).toHaveBeenLastCalledWith("happy");
   });
   it("konuşurken ağız açılıp kapanır, susunca temel yüze döner", () => {
     face.setBase("idle"); face.talk(true);
-    const a = el.innerHTML; vi.advanceTimersByTime(110); const b = el.innerHTML;
-    expect(new Set([a, b])).toEqual(new Set(["TA", "TB"]));
+    const a = render.mock.lastCall[0]; vi.advanceTimersByTime(110); const b = render.mock.lastCall[0];
+    expect(new Set([a, b])).toEqual(new Set(["talkA", "talkB"]));
     face.talk(false);
-    expect(el.innerHTML).toBe("I");
+    expect(render).toHaveBeenLastCalledWith("idle");
   });
   it("flash konuşmanın önüne geçer", () => {
     face.talk(true); face.flash("giggle", 500);
     expect(face.current).toBe("giggle");
+  });
+  it("aynı yüz art arda istenirse yeniden çizdirmez", () => {
+    face.setBase("happy"); face.setBase("happy");
+    expect(render).toHaveBeenCalledTimes(1);
+  });
+  it("v1'in ifade adları korunur", () => {
+    expect(FACE_NAMES).toEqual(["idle", "blink", "hungry", "talkA", "talkB", "happy", "sad", "giggle", "loading"]);
   });
 });

@@ -14,7 +14,7 @@ import { initBackground } from "./scene/background.js";
 import { SLICES, sliceForHour, applySlice } from "./scene/daycycle.js";
 import { initParticles } from "./scene/particles.js";
 import { BMO_SVG } from "./bmo/bmo.svg.js";
-import { createFace } from "./bmo/faces.js";
+import { createFace, FACES } from "./bmo/faces.js";
 import { initBehavior } from "./bmo/behavior.js";
 import { createTapes, placeTapes, bindDrag, relabelTapes } from "./tapes/tape.js";
 import { insertTape, ejectTape, missTape } from "./tapes/choreo.js";
@@ -47,7 +47,7 @@ if (!reduced) initParticles($("#particles"), state);
 
 /* --- BMO --- */
 const faceEl = $("#bmo-face");
-const face = createFace(faceEl);
+const face = createFace((n) => { faceEl.innerHTML = FACES[n]; });
 face.setBase("idle");
 const bmo = initBehavior({ bmoEl: $("#bmo"), faceEl, face, bus, state, reduced });
 

@@ -15,11 +15,14 @@ export const FACES = {
   loading: `<text class="f mono" x="144" y="100" text-anchor="middle">LOADING</text><rect class="fs" x="84" y="116" width="120" height="16"/><rect id="bmo-load-bar" class="f" x="88" y="120" width="0" height="8"/>`,
 };
 
-export function createFace(el, faces = FACES) {
+export const FACE_NAMES = ["idle", "blink", "hungry", "talkA", "talkB", "happy", "sad", "giggle", "loading"];
+
+/* Yüz önceliği: flash > konuşma > temel. Çizimi `draw(name)` yapar (2D SVG ya da 3D canvas); aynı yüz yeniden çizilmez. */
+export function createFace(draw) {
   let base = "idle", flashName = null, talking = false, mouthOpen = false;
   let flashT = 0, talkT = 0, shown = null;
   const current = () => flashName || (talking ? (mouthOpen ? "talkA" : "talkB") : base);
-  const render = () => { const n = current(); if (n !== shown) { el.innerHTML = faces[n]; shown = n; } };
+  const render = () => { const n = current(); if (n !== shown) { shown = n; draw(n); } };
   return {
     setBase(name) { base = name; render(); },
     flash(name, ms = 600) {
