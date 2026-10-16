@@ -1,6 +1,6 @@
 import {
-  Box3, Color, DirectionalLight, GridHelper, HemisphereLight, Mesh, MeshBasicMaterial, Plane, PointLight, Raycaster,
-  RingGeometry, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
+  Box3, DirectionalLight, GridHelper, HemisphereLight, Matrix4, Mesh, MeshBasicMaterial, Plane, PointLight, Quaternion,
+  Raycaster, RingGeometry, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
 } from "three";
 import { gsap } from "gsap";
 import { CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, TAPE_LEAN, makeCamera, projectRect } from "./layout.js";
@@ -112,16 +112,20 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   function resetCamera() { par.x = par.y = 0; toX(0); toY(0); applyParallax(); }
 
   /* yansıtma yardımcıları (stage pikseli) */
-  const corners = (obj, box) => {
-    obj.updateWorldMatrix(true, false);
+  const boxCorners = (box) => {
     const out = [];
-    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
-      out.push(obj.localToWorld(new Vector3(x, y, z)));
-    }
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) out.push(new Vector3(x, y, z));
     return out;
   };
-  const tapeBox = new Box3(new Vector3(-TAPE.w / 2, 0, -TAPE.d / 2), new Vector3(TAPE.w / 2, TAPE.h, TAPE.d / 2));
-  const rectOf = (id) => projectRect(camera, corners(tapes.get(id).group, tapeBox));
+  const corners = (obj, box) => { obj.updateWorldMatrix(true, false); return boxCorners(box).map((v) => obj.localToWorld(v)); };
+  /* kaset kutusu ev konumundan: kaset uçarken/sürüklenirken düğme yerinde kalır */
+  const tapeCorners = boxCorners(new Box3(new Vector3(-TAPE.w / 2, 0, -TAPE.d / 2), new Vector3(TAPE.w / 2, TAPE.h, TAPE.d / 2)));
+  const homeM = new Matrix4();
+  function rectOf(id) {
+    const t = tapes.get(id);
+    homeM.compose(t.home.position, new Quaternion().setFromEuler(t.home.rotation), t.group.scale);
+    return projectRect(camera, tapeCorners.map((c) => c.clone().applyMatrix4(homeM)));
+  }
   const bmoRect = () => projectRect(camera, corners(bmo.group, bmoLocalBox));
   function toClient(r) {
     const c = canvas.getBoundingClientRect(), k = c.width / W;
@@ -146,8 +150,14 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
     }
     return null;
   }
+  /* imlecin altındaki y yüksekliğindeki yatay düzlem noktası; ufka bakan ışınlar sahnenin içine (R=4) kırpılır */
   function floorPoint(clientX, clientY, y = 0) {
-    return aim(clientX, clientY).ray.intersectPlane(new Plane(new Vector3(0, 1, 0), -y), new Vector3()) || target.clone();
+    const r = aim(clientX, clientY).ray;
+    const p = r.intersectPlane(new Plane(new Vector3(0, 1, 0), -y), new Vector3()) || r.at(8, new Vector3());
+    p.y = y;
+    const dx = p.x - target.x, dz = p.z - target.z, d = Math.hypot(dx, dz), R = 4;
+    if (d > R) { p.x = target.x + (dx / d) * R; p.z = target.z + (dz / d) * R; }
+    return p;
   }
 
   /* döngü */

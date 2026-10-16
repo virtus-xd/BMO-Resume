@@ -47,7 +47,66 @@ export function createTapeButtons({ host, trayHost, projects, lang, rectOf, narr
   }
 
   function setGone(id, on) { buttons[id]?.classList.toggle("gone", on); }
+  function focus(id) { buttons[id]?.focus({ preventScroll: true }); }
 
   relabel(lang);
-  return { buttons, layout, relabel, setGone };
+  return { buttons, layout, relabel, setGone, focus };
+}
+
+/* Sürükleme: kıpırdamadan bırakmak dokunma (hızlı oynat); 7 px'ten fazla sürüklemek kaseti kaldırır.
+   onDrag yakınlığı döndürür (BMO'nun yuvasına yakın mı); pointercancel / lostpointercapture ıskalamadır. */
+export function bindDrag(el, id, { isBusy, onTap, onPick, onDrag, onDrop, onCancel, onReach }) {
+  let active = false, dragging = false, near = false, sx = 0, sy = 0, lastX = 0, lastT = 0, pid = 0;
+
+  const setNear = (v) => { if (v !== near) { near = v; onReach(v); } };
+  function finish() {
+    active = false;
+    try { el.releasePointerCapture?.(pid); } catch { /* yok say */ }
+  }
+
+  el.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || isBusy()) return;
+    active = true; dragging = false; near = false;
+    sx = lastX = e.clientX; sy = e.clientY; lastT = e.timeStamp; pid = e.pointerId;
+    try { el.setPointerCapture?.(pid); } catch { /* yok say */ }
+  });
+
+  el.addEventListener("pointermove", (e) => {
+    if (!active) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!dragging) {
+      /* raftaki yatay kaydırmayı engelleme */
+      if (el.closest(".tray") && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) { finish(); return; }
+      if (Math.hypot(dx, dy) < 7) return;
+      dragging = true;
+      onPick(id, e.clientX, e.clientY);
+    }
+    const dt = Math.max(1, e.timeStamp - lastT);
+    const vx = (e.clientX - lastX) / dt;
+    lastX = e.clientX; lastT = e.timeStamp;
+    setNear(!!onDrag(id, e.clientX, e.clientY, vx));
+  });
+
+  el.addEventListener("pointerup", (e) => {
+    if (!active) return;
+    const wasDragging = dragging;
+    dragging = false;
+    finish();
+    if (!wasDragging) { onTap(id); return; }
+    setNear(false);
+    onDrop(id, e.clientX, e.clientY);
+  });
+
+  const cancel = () => {
+    if (!active) return;
+    const wasDragging = dragging;
+    dragging = false;
+    finish();
+    if (wasDragging) { setNear(false); onCancel(id); }
+  };
+  el.addEventListener("pointercancel", cancel);
+  el.addEventListener("lostpointercapture", cancel);
+
+  /* klavye (Enter/Space) tıklaması: detail === 0 */
+  el.addEventListener("click", (e) => { if (e.detail === 0 && !isBusy()) onTap(id); });
 }

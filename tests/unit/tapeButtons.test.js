@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { createTapeButtons } from "../../src/ui/tapeButtons.js";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { createTapeButtons, bindDrag } from "../../src/ui/tapeButtons.js";
 
 const P = [
   { id: "a", color: { shell: "#111", label: "#222" }, title: { tr: "Bir", en: "One" } },
@@ -66,5 +66,60 @@ describe("createTapeButtons", () => {
     relabel("en");
     expect(buttons.a.getAttribute("aria-label")).toBe("Play the One tape");
     expect(buttons.a.textContent).toContain("One");
+  });
+});
+
+describe("bindDrag", () => {
+  let el, h;
+  const ev = (type, x, y, extra = {}) => {
+    const e = new MouseEvent(type, { bubbles: true, clientX: x, clientY: y, button: 0, ...extra });
+    Object.defineProperty(e, "pointerId", { value: 1 });
+    el.dispatchEvent(e);
+  };
+  beforeEach(() => {
+    document.body.innerHTML = `<button id="t"></button>`;
+    el = document.getElementById("t");
+    h = { isBusy: vi.fn(() => false), onTap: vi.fn(), onPick: vi.fn(), onDrag: vi.fn(() => false), onDrop: vi.fn(), onCancel: vi.fn(), onReach: vi.fn() };
+    bindDrag(el, "a", h);
+  });
+
+  it("kıpırdamadan bırakmak dokunmadır", () => {
+    ev("pointerdown", 100, 100); ev("pointerup", 101, 100);
+    expect(h.onTap).toHaveBeenCalledWith("a");
+    expect(h.onPick).not.toHaveBeenCalled();
+  });
+  it("7 px'ten fazla sürükleme kaseti kaldırır, bırakınca onDrop", () => {
+    ev("pointerdown", 100, 100); ev("pointermove", 120, 90); ev("pointermove", 200, 60); ev("pointerup", 200, 60);
+    expect(h.onPick).toHaveBeenCalledWith("a", 120, 90);
+    expect(h.onDrag).toHaveBeenLastCalledWith("a", 200, 60, expect.any(Number));
+    expect(h.onDrop).toHaveBeenCalledWith("a", 200, 60);
+    expect(h.onTap).not.toHaveBeenCalled();
+  });
+  it("yaklaşınca onReach(true), bırakınca onReach(false)", () => {
+    h.onDrag.mockReturnValue(true);
+    ev("pointerdown", 100, 100); ev("pointermove", 130, 100); ev("pointerup", 130, 100);
+    expect(h.onReach.mock.calls).toEqual([[true], [false]]);
+  });
+  it("pointercancel ve lostpointercapture ıskalama sayılır", () => {
+    ev("pointerdown", 100, 100); ev("pointermove", 140, 100); ev("pointercancel", 140, 100);
+    expect(h.onCancel).toHaveBeenCalledWith("a");
+    ev("pointerdown", 100, 100); ev("pointermove", 140, 100); ev("lostpointercapture", 140, 100);
+    expect(h.onCancel).toHaveBeenCalledTimes(2);
+    expect(h.onDrop).not.toHaveBeenCalled();
+  });
+  it("bırakmadan sonra gelen lostpointercapture ikinci kez tetiklemez", () => {
+    ev("pointerdown", 100, 100); ev("pointermove", 140, 100); ev("pointerup", 140, 100); ev("lostpointercapture", 140, 100);
+    expect(h.onDrop).toHaveBeenCalledTimes(1);
+    expect(h.onCancel).not.toHaveBeenCalled();
+  });
+  it("meşgulken kaset kapılmaz", () => {
+    h.isBusy.mockReturnValue(true);
+    ev("pointerdown", 100, 100); ev("pointermove", 160, 100); ev("pointerup", 160, 100);
+    expect(h.onPick).not.toHaveBeenCalled();
+    expect(h.onTap).not.toHaveBeenCalled();
+  });
+  it("klavye tıklaması (detail 0) dokunma sayılır", () => {
+    el.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 }));
+    expect(h.onTap).toHaveBeenCalledWith("a");
   });
 });

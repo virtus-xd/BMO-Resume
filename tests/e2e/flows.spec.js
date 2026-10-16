@@ -7,31 +7,56 @@ const ready = async (page, url = "/?t=noon") => {
   await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
 };
 
-test.fixme("sürükle-bırak ile kaset takılır", async ({ page }) => {
+const center = async (loc) => { const b = await loc.boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+const grab = async (page, id) => {
+  const [x, y] = await center(page.locator(`#tapeBtns .tape[data-id="${id}"]`));
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 30, y - 30, { steps: 5 });
+};
+
+test("sürükle-bırak ile kaset takılır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
-  const tape = await page.locator('.tape[data-id="tbh"] .cas').boundingBox();
-  const slot = await page.locator("#bmo-slot").boundingBox();
-  await page.mouse.move(tape.x + tape.width / 2, tape.y + tape.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(tape.x + 40, tape.y - 40, { steps: 5 });
-  await page.mouse.move(slot.x + slot.width / 2, slot.y + slot.height / 2, { steps: 15 });
+  await grab(page, "tbh");
+  const [bx, by] = await center(page.locator("#bmoHit"));
+  await page.mouse.move(bx, by, { steps: 15 });
   await page.mouse.up();
-  await expect(page.locator("#sTitle")).toHaveText("TBH Trade");
+  await expect(page.locator("#sTitle")).toHaveText("TBH Trade", { timeout: 8000 });
+  await expect(page.locator('#tapeBtns .tape[data-id="tbh"]')).toHaveClass(/gone/);
 });
 
-test.fixme("BMO'dan uzağa bırakılan kaset yerine döner", async ({ page }) => {
+test("BMO'dan uzağa bırakılan kaset yerine döner", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
-  const tapeLoc = page.locator('.tape[data-id="tbh"]');
-  const tape = await tapeLoc.locator(".cas").boundingBox();
-  await page.mouse.move(tape.x + tape.width / 2, tape.y + tape.height / 2);
-  await page.mouse.down();
+  const tapeLoc = page.locator('#tapeBtns .tape[data-id="tbh"]');
+  await grab(page, "tbh");
   await page.mouse.move(200, 200, { steps: 10 });
   await page.mouse.up();
+  await expect(page.locator("#speechText")).toContainText("ıskaladın");
+  await expect(tapeLoc).not.toHaveClass(/gone/);
   await expect(tapeLoc).toBeVisible();
   await expect(page.locator("#screenUi")).toBeHidden();
+});
+
+test("sürükleme iptal edilirse (pointercancel) ıskalama sayılır", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  const tapeLoc = page.locator('#tapeBtns .tape[data-id="okey"]');
+  await grab(page, "okey");
+  await expect(tapeLoc).toHaveClass(/gone/);
+  await tapeLoc.dispatchEvent("pointercancel", { pointerId: 1 });
   await expect(page.locator("#speechText")).toContainText("ıskaladın");
+  await expect(tapeLoc).not.toHaveClass(/gone/);
+  await page.mouse.up();
+});
+
+test("kaset kapılınca ipucu satırı gizlenir", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  await grab(page, "jarvis");
+  await expect(page.locator("#speechHint")).toBeHidden();
+  await page.mouse.up();
 });
 
 test.fixme("klavye: Enter ile tak, odak ekranda, Esc ile odak kasete döner", async ({ page }) => {

@@ -14,7 +14,9 @@ import { initParticles } from "./scene/particles.js";
 import { createFace } from "./bmo/faces.js";
 import { initBehavior } from "./bmo/behavior.js";
 import { hasWebGL } from "./three/webgl.js";
-import { createTapeButtons } from "./ui/tapeButtons.js";
+import { createTapeButtons, bindDrag } from "./ui/tapeButtons.js";
+import { createFlow } from "./ui/flow.js";
+import { createScreen } from "./ui/screen.js";
 import { createSpeech } from "./ui/speech.js";
 import { initTopbar } from "./ui/topbar.js";
 import { initListview } from "./ui/listview.js";
@@ -35,8 +37,8 @@ function applyLang() { document.documentElement.lang = state.lang; applyI18n(doc
 applyLang();
 
 /* --- sahne --- */
-let world = null, tapeBtns = null;
-initStage($("#stage"), { onLayout: (v) => { state.narrow = v.narrow; relayout(); } });
+let world = null, tapeBtns = null, flow = null;
+const view = initStage($("#stage"), { onLayout: (v) => { state.narrow = v.narrow; relayout(); } });
 const background = initBackground({ dayEl: $("#bgDay"), nightEl: $("#bgNight"), state, bus, reduced });
 if (!reduced) initParticles($("#particles"), state);
 
@@ -53,19 +55,24 @@ bus.on("sfx", (name) => sfx.play(name));
 bus.on("sound:change", (on) => sfx.setEnabled(on));
 addEventListener("resize", () => speech.place());
 
-/* --- BMO'ya ve kasetlere dokunma (3D takma akışı Görev 6'da) --- */
-function giggle() {
+/* --- BMO ekranı: 3D zoom Görev 7'de; o zamana kadar ortada panel --- */
+const screen = createScreen({ cameraEl: $("#stage"), uiEl: $("#screenUi"), backdropEl: $("#screenBackdrop"), view, state, bus, reduced: true, parallax: null, projects: PROJECTS });
+const byId = (id) => PROJECTS.find((p) => p.id === id);
+
+/* BMO'ya tıklama: kaset takılıysa ekranı yeniden açar, değilse kıkırdar */
+$("#bmoHit").addEventListener("click", () => {
+  if (state.busy) return;
+  if (state.current) { flow?.play(state.current); return; }
   bus.emit("face", { flash: "giggle", ms: 900 });
   bus.emit("sfx", "giggle");
   bus.emit("say", line(state.lang, "click"));
-}
-$("#bmoHit").addEventListener("click", () => { if (!state.busy) giggle(); });
+});
 
 /* geniş düzende düğmeler 3D kasetlere, BMO'nun tıklama alanı BMO'ya oturur; dar düzende kasetler rafta */
 function relayout() {
   if (!world) return;
   world.resize();
-  world.tapes.forEach((tape) => { tape.group.visible = !state.narrow; });
+  world.tapes.forEach((tape, id) => { if (state.current?.id !== id && !state.busy) tape.group.visible = !state.narrow; });
   tapeBtns.layout();
   const r = world.bmoRect();
   Object.assign($("#bmoHit").style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
@@ -73,7 +80,7 @@ function relayout() {
 
 async function bootWorld() {
   if (!hasWebGL()) return null; // yedek yol Görev 9'da
-  const { createWorld } = await import("./three/world.js");
+  const [{ createWorld }, { createChoreo }] = await Promise.all([import("./three/world.js"), import("./three/choreo3d.js")]);
   world = await createWorld({
     canvas: $("#world"), state, bus, reduced, projects: PROJECTS, lang: state.lang,
     calib: params.has("calib"), onCameraChange: () => { if (!state.narrow) relayout(); },
@@ -91,16 +98,34 @@ async function bootWorld() {
     host: $("#tapeBtns"), trayHost: $("#tray"), projects: PROJECTS.slice(0, world.tapes.size), lang: state.lang,
     rectOf: world.rectOf, narrow: () => state.narrow, thumbOf: world.thumbOf,
   });
+  const choreo = createChoreo({ world, bus, state, reduced, notesHost: $("#stage") });
+  flow = createFlow({ anim: choreo, buttons: tapeBtns, bus, state, screen });
+  const hideHint = () => { $("#speechHint").hidden = true; };
   Object.entries(tapeBtns.buttons).forEach(([id, b]) => {
     const hover = (on) => () => world.tapes.get(id).setHover(on);
     b.addEventListener("pointerenter", hover(true)); b.addEventListener("pointerleave", hover(false));
     b.addEventListener("focus", hover(true)); b.addEventListener("blur", hover(false));
-    b.addEventListener("click", () => { if (!state.busy) giggle(); });
+    /* ıskalama/takma kilitliyse kaset kilitsiz yerine döner */
+    const orHome = (ok) => { if (!ok) { choreo.snapHome(id); if (state.current?.id !== id) tapeBtns.setGone(id, false); } };
+    bindDrag(b, id, {
+      isBusy: () => state.busy,
+      onTap: () => flow.play(byId(id)),
+      onPick: (_, x, y) => { hideHint(); tapeBtns.setGone(id, true); world.tapes.get(id).setHover(false); bus.emit("sfx", "pick"); choreo.pick(id, x, y); },
+      onDrag: (_, x, y, vx) => choreo.moveTo(id, x, y, vx),
+      onReach: (on) => bus.emit("reach", on),
+      onDrop: (_, x, y) => (choreo.release(id, x, y) ? flow.play(byId(id), { fromDrag: true }) : flow.miss(byId(id))).then(orHome),
+      onCancel: () => { choreo.release(id, 0, 0); flow.miss(byId(id)).then(orHome); },
+    });
   });
   relayout();
   return behavior;
 }
 const worldReady = bootWorld().catch((e) => { console.error("[world]", e); return null; });
+
+/* Esc / dışarı tıklama / ⏏ — Görev 7'de kapat ve çıkar ayrılır */
+bus.on("screen:closed", () => flow?.eject());
+bus.on("tape:loaded", (p) => sfx.startLoop(p.id));
+bus.on("tape:ejected", () => sfx.stopLoop());
 
 /* --- üst çubuk, liste, dil --- */
 const listview = initListview({ el: $("#listview"), state, bus, projects: PROJECTS, profile: PROFILE });
@@ -109,6 +134,7 @@ bus.on("lang:change", () => {
   applyLang();
   world?.tapes.forEach((tape) => tape.setLabel(state.lang));
   tapeBtns?.relabel(state.lang);
+  screen.rerender();
 });
 
 /* --- açılış --- */

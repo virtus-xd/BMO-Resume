@@ -34,11 +34,10 @@ test("BMO'nun tıklama alanı görünür ve BMO'nun yansıtılmış kutusunda", 
   expect(ok).toBe(true);
 });
 
-test("kaset düğmesine tıklamak BMO'yu kıkırdatır (3D akış Görev 6'da)", async ({ page }) => {
+test("kaset düğmesine tıklamak kaseti takar ve projeyi açar", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
-  await page.waitForTimeout(3500); // karşılama repliği bitsin
   await page.locator('#tapeBtns .tape[data-id="okey"]').click();
-  await expect(page.locator("#speechText")).not.toHaveText("", { timeout: 3000 });
-  await expect(page.locator("#screenUi")).toBeHidden();
+  await expect(page.locator("#sTitle")).toHaveText("81 Okey", { timeout: 8000 });
+  await expect(page.locator('#tapeBtns .tape[data-id="okey"]')).toHaveClass(/gone/);
 });
