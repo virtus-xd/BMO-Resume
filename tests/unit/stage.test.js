@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { coverScale, stageOffsetY, W, H } from "../../src/scene/stage.js";
-import { SLOTS } from "../../src/scene/room.svg.js";
+import { coverScale, stageOffsetY, W, H, BMO_CENTER_Y } from "../../src/scene/stage.js";
 
 describe("coverScale", () => {
   it("geniş ekranda sahneyi kaplar (+%4 parallax payı)", () => {
@@ -16,16 +15,6 @@ describe("stageOffsetY", () => {
   it("geniş düzende kaydırma yok", () => expect(stageOffsetY(900, 1, false)).toBe(0));
   it("dar düzende BMO'nun merkezi ekranın %45'ine gelir", () => {
     const vh = 812, k = coverScale(375, vh, true), oy = stageOffsetY(vh, k, true);
-    expect(vh / 2 + oy + (770 - H / 2) * k).toBeCloseTo(0.45 * vh);
-  });
-});
-
-describe("room", () => {
-  it("10 kaset yuvası var ve hepsi güvenli bölgede", () => {
-    expect(SLOTS).toHaveLength(10);
-    SLOTS.forEach((s) => { expect(s.x).toBeGreaterThanOrEqual(240 + 70); expect(s.x).toBeLessThanOrEqual(1680 - 70); });
-  });
-  it("yuvalar dikeyde de güvenli: ~2.1:1 ekranda kırpılmayan bant içinde (y ≤ 980)", () => {
-    SLOTS.forEach((s) => expect(s.y).toBeLessThanOrEqual(980));
+    expect(vh / 2 + oy + (BMO_CENTER_Y - H / 2) * k).toBeCloseTo(0.45 * vh);
   });
 });

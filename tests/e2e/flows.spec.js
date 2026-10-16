@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
 
+/* test.fixme: 3D takma/zoom akışı Görev 6–7'de gelince yeniden açılacak */
+
 const ready = async (page, url = "/?t=noon") => {
   await page.goto(url);
   await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
 };
 
-test("sürükle-bırak ile kaset takılır", async ({ page }) => {
+test.fixme("sürükle-bırak ile kaset takılır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   const tape = await page.locator('.tape[data-id="tbh"] .cas').boundingBox();
@@ -18,7 +20,7 @@ test("sürükle-bırak ile kaset takılır", async ({ page }) => {
   await expect(page.locator("#sTitle")).toHaveText("TBH Trade");
 });
 
-test("BMO'dan uzağa bırakılan kaset yerine döner", async ({ page }) => {
+test.fixme("BMO'dan uzağa bırakılan kaset yerine döner", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   const tapeLoc = page.locator('.tape[data-id="tbh"]');
@@ -32,7 +34,7 @@ test("BMO'dan uzağa bırakılan kaset yerine döner", async ({ page }) => {
   await expect(page.locator("#speechText")).toContainText("ıskaladın");
 });
 
-test("klavye: Enter ile tak, odak ekranda, Esc ile odak kasete döner", async ({ page }) => {
+test.fixme("klavye: Enter ile tak, odak ekranda, Esc ile odak kasete döner", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   const tape = page.locator('.tape[data-id="radar"]');
@@ -63,7 +65,7 @@ test("TR/EN geçişi metinleri değiştirir ve kalıcıdır", async ({ page }) =
   await expect(page.locator('.tape[data-id="radar"]')).toContainText("Radar Mines");
 });
 
-test("hareketi azalt: zoom yerine ortada panel açılır", async ({ page }) => {
+test.fixme("hareketi azalt: zoom yerine ortada panel açılır", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);

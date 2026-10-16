@@ -4,16 +4,19 @@ import { W, H } from "../scene/stage.js";
 /* Sahne kalibrasyonu tek yerde: kamera, BMO ve kaset yuvaları bg2'nin perspektifine göre (bkz. ?calib).
    Dünya: y yukarı, zemin y=0, kamera +z tarafından bakar. */
 export const CAMERA = { fov: 30, position: [0, 3.0, 7.6], target: [0, 0.55, 0] };
-export const BMO = { position: [0, 0, 0.6], rotY: 0.45, scale: 0.62 };
+export const BMO = { position: [0, 0, 1.15], rotY: 0.3, scale: 0.7 };
+/* bg2'deki zemin boşlukları (stage px → zemin): sol arka, sol, sol ön, ön sol, ön sağ, sağ, sağ arka */
 export const TAPE_SLOTS = [
-  { position: [-1.9, 0, 0.2], rotY: 0.5 },
-  { position: [-1.5, 0, 1.4], rotY: 0.35 },
-  { position: [-0.7, 0, 2.0], rotY: 0.15 },
-  { position: [0.8, 0, 2.0], rotY: -0.15 },
-  { position: [1.6, 0, 1.3], rotY: -0.35 },
-  { position: [2.0, 0, 0.2], rotY: -0.5 },
-  { position: [1.2, 0, -0.6], rotY: -0.3 },
+  { position: [-0.77, 0, 0.44], rotY: 0.3 },
+  { position: [-1.36, 0, 1.04], rotY: 0.35 },
+  { position: [-1.75, 0, 1.96], rotY: 0.25 },
+  { position: [-0.82, 0, 2.12], rotY: 0.1 },
+  { position: [0.84, 0, 2.12], rotY: -0.12 },
+  { position: [1.67, 0, 1.58], rotY: -0.3 },
+  { position: [1.09, 0, 1.02], rotY: -0.25 },
 ];
+export const TAPE_SCALE = 0.6;    // kaset (0.7 genişlik) BMO'ya göre ölçeklenir
+export const TAPE_LEAN = -0.14;   // kasetler hafif arkaya yaslanır
 export const SAFE = { x0: 240, x1: 1680, y0: 95, y1: 985 };
 
 export function makeCamera(aspect = W / H) {

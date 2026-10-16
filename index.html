@@ -24,7 +24,7 @@
 <body>
   <div class="loader" id="loader" aria-hidden="true"><div class="loader-screen"><span>LOADING</span><i><b id="loaderBar"></b></i></div></div>
 
-  <!-- üst çubuk sahneden önce: Tab sırası üst çubuk → kasetler → nesneler -->
+  <!-- üst çubuk sahneden önce: Tab sırası üst çubuk → kasetler → BMO -->
   <header class="topbar" id="topbar">
     <div class="sign"><div class="plank"><h1>Erdem</h1><p data-i18n="tagline"></p></div></div>
     <nav class="tools">
@@ -39,11 +39,13 @@
     <div class="stage" id="stage">
       <img id="bgDay" class="bg" alt="" fetchpriority="high">
       <img id="bgNight" class="bg" alt="">
-      <div class="camera" id="camera">
-        <div class="layer" id="l2" data-depth="0.7"></div>
-      </div>
+      <canvas class="world" id="world" aria-hidden="true"></canvas>
+      <canvas class="particles" id="particles" aria-hidden="true"></canvas>
       <div class="tint"></div>
       <div class="vignette"></div>
+      <!-- DOM sırası = Tab sırası: kasetler → BMO -->
+      <div class="tape-btns" id="tapeBtns"></div>
+      <button type="button" class="bmo-hit" id="bmoHit" aria-label="BMO"></button>
     </div>
   </main>
 

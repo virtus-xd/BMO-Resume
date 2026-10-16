@@ -1,0 +1,175 @@
+import {
+  Box3, Color, DirectionalLight, GridHelper, HemisphereLight, Mesh, MeshBasicMaterial, Plane, PointLight, Raycaster,
+  RingGeometry, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
+} from "three";
+import { gsap } from "gsap";
+import { CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, TAPE_LEAN, makeCamera, projectRect } from "./layout.js";
+import { createBmo } from "./bmo.js";
+import { createTape3D, tapeThumbnail, TAPE } from "./tapes.js";
+import { W, H } from "../scene/stage.js";
+
+/* gün dilimine göre ışık: gündüz sıcak beyaz + sağdaki pencereden güneş; gece mavi ortam + fener ışıkları */
+const LIGHTS = {
+  morning: { sky: 0xfff4e6, ground: 0x7a5434, hemi: 1.25, sun: 1.8, sunColor: 0xffe2b8, lamp: 0, label: 1 },
+  noon: { sky: 0xf4f8ff, ground: 0x7a5434, hemi: 1.3, sun: 2.0, sunColor: 0xfff0d0, lamp: 0, label: 1 },
+  sunset: { sky: 0xffd2b0, ground: 0x6a3a24, hemi: 1.1, sun: 1.6, sunColor: 0xffa060, lamp: 0.6, label: 0.92 },
+  night: { sky: 0x6b7bd6, ground: 0x3a2414, hemi: 0.7, sun: 0.35, sunColor: 0x9fb4ff, lamp: 1.6, label: 0.72 },
+};
+
+export async function createWorld({ canvas, state, bus, reduced, projects, lang, calib = false, onCameraChange }) {
+  await Promise.all([
+    document.fonts?.load("62px 'Gochi Hand'"), document.fonts?.load("30px VT323"),
+  ].map((p) => Promise.resolve(p).catch(() => {})));
+
+  const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+  renderer.outputColorSpace = SRGBColorSpace;
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new Scene();
+  const camera = makeCamera(W / H);
+  const target = new Vector3(...CAMERA.target);
+  const base = new Vector3(...CAMERA.position);
+
+  const hemi = new HemisphereLight(0xffffff, 0x000000, 1);
+  const sun = new DirectionalLight(0xffffff, 1);
+  sun.position.set(4.5, 4, 2);            // bg2: ışık sağdaki yuvarlak pencereden
+  const lamps = [[-1.6, 2.6, -1.2], [1.3, 2.7, -1.6]].map((p) => {
+    const l = new PointLight(0xffa040, 0, 9, 1);
+    l.position.set(...p); scene.add(l);
+    return l;
+  });
+  scene.add(hemi, sun);
+
+  /* BMO */
+  const bmo = createBmo();
+  bmo.group.updateMatrixWorld(true);       // yerel kutu: dönüşümler uygulanmadan önce (gölgeler hariç)
+  const bmoLocalBox = new Box3().setFromObject(bmo.group.getObjectByName("rig"), true);
+  bmo.group.position.set(...BMO.position);
+  bmo.group.rotation.y = BMO.rotY;
+  bmo.group.scale.setScalar(BMO.scale);
+  scene.add(bmo.group);
+
+  /* kasetler: proje sırası = yuva sırası */
+  const tapes = new Map();
+  projects.slice(0, TAPE_SLOTS.length).forEach((p, i) => {
+    const tape = createTape3D(p, lang);
+    const s = TAPE_SLOTS[i];
+    tape.group.position.set(...s.position);
+    tape.group.rotation.set(TAPE_LEAN, s.rotY, 0, "YXZ");
+    tape.group.scale.setScalar(TAPE_SCALE);
+    tape.home = { position: tape.group.position.clone(), rotation: tape.group.rotation.clone() };
+    scene.add(tape.group);
+    tapes.set(p.id, tape);
+  });
+
+  if (calib) {
+    const grid = new GridHelper(12, 24, 0xff3366, 0x33ffcc);
+    grid.position.y = 0.001; scene.add(grid);
+    const mark = (pos, color) => {
+      const m = new Mesh(new RingGeometry(0.16, 0.2, 24), new MeshBasicMaterial({ color, depthTest: false }));
+      m.rotation.x = -Math.PI / 2; m.position.set(pos[0], 0.003, pos[2]); scene.add(m);
+    };
+    TAPE_SLOTS.forEach((s) => mark(s.position, 0xffee00));
+    mark(BMO.position, 0xff00ff);
+  }
+
+  function setSlice(slice) {
+    const L = LIGHTS[slice] || LIGHTS.noon;
+    hemi.color.set(L.sky); hemi.groundColor.set(L.ground); hemi.intensity = L.hemi;
+    sun.color.set(L.sunColor); sun.intensity = L.sun;
+    lamps.forEach((l) => { l.intensity = L.lamp; });
+    tapes.forEach((t) => t.group.getObjectByName("label").material.color.setScalar(L.label));
+  }
+  setSlice(state.slice);
+  bus.on("slice:change", setSlice);
+
+  /* çözünürlük: görüntülenen boyut × dpr, en fazla 2 ve toplam ≤ ~4 MP */
+  function resize() {
+    const k = canvas.getBoundingClientRect().width / W || 1;
+    renderer.setPixelRatio(Math.min(devicePixelRatio * k, 2, Math.sqrt(4e6 / (W * H))));
+    renderer.setSize(W, H, false);
+  }
+  resize();
+
+  /* kamera parallax'ı: fareyle hedef etrafında küçük yay; dar düzende, hareketi azalt'ta ve zoom'da yok */
+  const par = { x: 0, y: 0 };
+  let parDirty = false;
+  const toX = gsap.quickTo(par, "x", { duration: 0.9, ease: "power3", onUpdate: () => { parDirty = true; } });
+  const toY = gsap.quickTo(par, "y", { duration: 0.9, ease: "power3", onUpdate: () => { parDirty = true; } });
+  if (!reduced) addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse" || state.zoomed || state.narrow) return;
+    toX((e.clientX / innerWidth - 0.5) * 0.24);
+    toY(-(e.clientY / innerHeight - 0.5) * 0.12);
+  });
+  function applyParallax() {
+    parDirty = false;
+    const right = new Vector3().subVectors(target, base).cross(camera.up).normalize();
+    camera.position.copy(base).addScaledVector(right, par.x).addScaledVector(camera.up, par.y);
+    camera.lookAt(target);
+    camera.updateMatrixWorld();
+    onCameraChange?.();
+  }
+  function resetCamera() { par.x = par.y = 0; toX(0); toY(0); applyParallax(); }
+
+  /* yansıtma yardımcıları (stage pikseli) */
+  const corners = (obj, box) => {
+    obj.updateWorldMatrix(true, false);
+    const out = [];
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+      out.push(obj.localToWorld(new Vector3(x, y, z)));
+    }
+    return out;
+  };
+  const tapeBox = new Box3(new Vector3(-TAPE.w / 2, 0, -TAPE.d / 2), new Vector3(TAPE.w / 2, TAPE.h, TAPE.d / 2));
+  const rectOf = (id) => projectRect(camera, corners(tapes.get(id).group, tapeBox));
+  const bmoRect = () => projectRect(camera, corners(bmo.group, bmoLocalBox));
+  function toClient(r) {
+    const c = canvas.getBoundingClientRect(), k = c.width / W;
+    return { left: c.left + r.left * k, top: c.top + r.top * k, width: r.width * k, height: r.height * k, right: c.left + (r.left + r.width) * k, bottom: c.top + (r.top + r.height) * k };
+  }
+  const screenClientRect = () => toClient(projectRect(camera, bmo.screenCorners()));
+
+  /* imleç → ışın */
+  const ray = new Raycaster(), ndc = new Vector2();
+  function aim(clientX, clientY) {
+    const c = canvas.getBoundingClientRect();
+    ndc.set(((clientX - c.left) / c.width) * 2 - 1, -(((clientY - c.top) / c.height) * 2 - 1));
+    ray.setFromCamera(ndc, camera);
+    return ray;
+  }
+  function pick(clientX, clientY) {
+    const hits = aim(clientX, clientY).intersectObjects([...tapes.values()].map((t) => t.group), true);
+    for (const h of hits) {
+      let o = h.object;
+      while (o && o.name !== "tape") o = o.parent;
+      if (o?.visible) return o.userData.id;
+    }
+    return null;
+  }
+  function floorPoint(clientX, clientY, y = 0) {
+    return aim(clientX, clientY).ray.intersectPlane(new Plane(new Vector3(0, 1, 0), -y), new Vector3()) || target.clone();
+  }
+
+  /* döngü */
+  function frame(t) {
+    if (document.hidden) return;
+    if (parDirty && !state.zoomed) applyParallax();
+    bmo.tick(t);
+    renderer.render(scene, camera);
+  }
+  renderer.setAnimationLoop(frame);
+  function pause(on) { renderer.setAnimationLoop(on ? null : frame); }
+  const render = () => renderer.render(scene, camera);
+
+  const thumbs = new Map();
+  function thumbOf(id) {
+    const key = id + ":" + tapes.get(id).group.getObjectByName("label").userData.lines.join("|");
+    if (!thumbs.has(key)) thumbs.set(key, tapeThumbnail(renderer, tapes.get(id), 160));
+    return thumbs.get(key);
+  }
+
+  return {
+    bmo, tapes, camera, scene, renderer, target,
+    rectOf, bmoRect, screenClientRect, toClient, setSlice, pause, render, resize, resetCamera, pick, floorPoint, thumbOf,
+  };
+}

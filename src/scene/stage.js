@@ -1,7 +1,8 @@
 /* Sahne 1920×1080 tasarım ölçeğinde çizilir ve ekranı "cover" ile doldurur. */
 export const W = 1920, H = 1080;
 export const NARROW_QUERY = "(max-width: 700px), (orientation: portrait)";
-const BMO_CENTER_Y = 770;
+/* 3D BMO'nun yansıtılmış merkezi (stage px; layout.js'teki BMO/CAMERA ile birlikte değişir) */
+export const BMO_CENTER_Y = 673;
 
 export function coverScale(vw, vh, narrow) {
   return Math.max(vw / W, vh / H) * (narrow ? 1.3 : 1.04);

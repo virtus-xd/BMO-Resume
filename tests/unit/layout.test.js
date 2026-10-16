@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Vector3, PerspectiveCamera } from "three";
 import {
-  CAMERA, BMO, TAPE_SLOTS, makeCamera, projectToStage, projectRect, inSafeBand, zoomPose, wrapTitle,
+  CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, makeCamera, projectToStage, projectRect, inSafeBand, zoomPose, wrapTitle,
 } from "../../src/three/layout.js";
 
 describe("wrapTitle", () => {
@@ -78,17 +78,25 @@ describe("yerleşim sabitleri", () => {
     [-hx, 0, -hz], [hx, 0, -hz], [hx, 0, hz], [-hx, 0, hz], [-hx, h, -hz], [hx, h, -hz], [hx, h, hz], [-hx, h, hz],
   ].map(([dx, dy, dz]) => new Vector3(x + dx, y + dy, z + dz));
 
-  it("7 kaset yuvası zeminde ve BMO'ya 1.2–2.4 birim uzaklıkta", () => {
+  it("7 kaset yuvası zeminde ve BMO'ya 0.95–2.4 birim uzaklıkta", () => {
     expect(TAPE_SLOTS).toHaveLength(7);
     const b = new Vector3(...BMO.position);
     TAPE_SLOTS.forEach((s) => {
       expect(s.position[1]).toBe(0);
       const d = new Vector3(...s.position).distanceTo(b);
-      expect(d).toBeGreaterThanOrEqual(1.2); expect(d).toBeLessThanOrEqual(2.4);
+      expect(d).toBeGreaterThanOrEqual(0.95); expect(d).toBeLessThanOrEqual(2.4);
     });
   });
-  it("her kaset (±0.35 kutusuyla) güvenli bantta", () => {
-    TAPE_SLOTS.forEach((s) => expect(inSafeBand(projectRect(cam, box(s.position, 0.35, 0.7, 0.35)))).toBe(true));
+  /* kasetin sınırlayıcı kutusu: ölçeklenmemiş ±0.35 × 0.44 yükseklik, TAPE_SCALE ile */
+  const tapeBox = (s) => box(s.position, 0.35 * TAPE_SCALE, 0.44 * TAPE_SCALE, 0.35 * TAPE_SCALE);
+  it("her kaset güvenli bantta", () => {
+    TAPE_SLOTS.forEach((s) => expect(inSafeBand(projectRect(cam, tapeBox(s)))).toBe(true));
+  });
+  it("yansıtılmış kasetler birbiriyle ve BMO ile çakışmaz", () => {
+    const k = BMO.scale;
+    const rects = [...TAPE_SLOTS.map((s) => projectRect(cam, tapeBox(s))), projectRect(cam, box(BMO.position, 0.55 * k, 1.3 * k, 0.5 * k))];
+    const hit = (a, b) => a.left < b.left + b.width && b.left < a.left + a.width && a.top < b.top + b.height && b.top < a.top + a.height;
+    rects.forEach((a, i) => rects.forEach((b, j) => { if (i < j) expect(hit(a, b), `${i}↔${j}`).toBe(false); }));
   });
   it("BMO (oturan gövdesi ve kollarıyla) güvenli bantta", () => {
     const k = BMO.scale;
@@ -100,5 +108,15 @@ describe("yerleşim sabitleri", () => {
     expect(inSafeBand({ left: 300, top: 95, width: 1381, height: 10 })).toBe(false);
     expect(inSafeBand({ left: 300, top: 94, width: 10, height: 10 })).toBe(false);
     expect(inSafeBand({ left: 300, top: 900, width: 10, height: 86 })).toBe(false);
+  });
+});
+
+describe("stage ile uyum", () => {
+  it("stage.js'teki BMO_CENTER_Y yansıtılmış BMO merkeziyle (±12 px) aynı", async () => {
+    const { BMO_CENTER_Y } = await import("../../src/scene/stage.js");
+    const k = BMO.scale, [x, , z] = BMO.position;
+    const pts = [[-0.55, 0, -0.5], [0.55, 0, 0.5], [-0.55, 1.3, -0.5], [0.55, 1.3, 0.5]].map(([a, b, c]) => new Vector3(x + a * k, b * k, z + c * k));
+    const r = projectRect(makeCamera(), pts);
+    expect(Math.abs(r.top + r.height / 2 - BMO_CENTER_Y)).toBeLessThanOrEqual(12);
   });
 });

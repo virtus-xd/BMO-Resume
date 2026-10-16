@@ -15,9 +15,9 @@
     padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
     background: linear-gradient(180deg, var(--wood) 0 10px, var(--wood-dk) 10px); border-top: 4px solid var(--ink); box-shadow: 0 -6px 0 rgba(30, 10, 2, .3); }
   .tray::-webkit-scrollbar { display: none; }
-  .tray .tape { position: relative; flex: 0 0 auto; font-size: 13px; transform: none; touch-action: pan-x; scroll-snap-align: start; }
+  .tray .tape { position: relative; flex: 0 0 auto; touch-action: pan-x; scroll-snap-align: start; transition: transform .2s; }
   .tray .tape:hover { transform: translateY(-2px); }
-  .tray .easel { display: none; }
+  .tray .tape .thumb { display: block; width: 112px; height: auto; filter: drop-shadow(0 4px 0 rgba(30, 10, 2, .35)); }
   .speech small { display: none; }
 }
 
