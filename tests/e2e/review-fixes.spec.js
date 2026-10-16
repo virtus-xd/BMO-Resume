@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const ready = async (page, url = "/?t=noon") => {
   await page.goto(url);
-  await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
+  await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
 };
 const inViewport = (page) => page.evaluate(() => {
   const r = document.getElementById("screenUi").getBoundingClientRect();

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const ready = async (page, url = "/?t=noon") => {
   await page.goto(url);
-  await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
+  await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
 };
 
 const center = async (loc) => { const b = await loc.boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };

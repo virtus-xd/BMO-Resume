@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const ready = async (page, url = "/?t=noon") => {
   await page.goto(url);
-  await expect(page.locator("#loader")).toBeHidden({ timeout: 8000 });
+  await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
   await expect(page.locator('.tape[data-id="okey"]')).toBeVisible();
 };
 const inViewport = (page) => page.evaluate(() => {

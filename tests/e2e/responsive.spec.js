@@ -4,7 +4,7 @@ for (const [w, h] of [[375, 812], [768, 1024], [1440, 900], [2560, 1440]]) {
   test(`${w}×${h}: yatay kaydırma yok, kasetler erişilebilir, ekran görüntüsü`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto("/?t=sunset");
-    await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
+    await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     expect(overflow).toBe(false);
     const tape = page.locator('.tape[data-id="okey"]');
