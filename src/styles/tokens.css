@@ -27,7 +27,7 @@
 }
 .t-morning { --sky: #bfe3f2; --sky2: #ffe6c4; --sun: #fff0b0; --beam-a: .38; --lamp: .2; --tint: .05; --tint-c: #ffcf8a; }
 .t-sunset  { --sky: #f59a6b; --sky2: #ffd08a; --hill: #8a9b4e; --hill2: #b6a85a; --sun: #ffb04a; --wall: #c4804c; --beam-a: .5; --lamp: .6; --tint: .12; --tint-c: #c2502a; }
-.t-night   { --sky: #1c2350; --sky2: #2c3570; --hill: #28465a; --hill2: #355a6a; --sun: #f3f1d8; --wall: #7c5638; --wall-dk: #5c3d26; --floor: #86603e; --floor-dk: #654529; --beam-a: 0; --lamp: 1; --stars: 1; --moon: 1; --tint: .28; --tint-c: #141a48; }
+.t-night   { --sky: #1c2350; --sky2: #2c3570; --hill: #28465a; --hill2: #355a6a; --sun: #f3f1d8; --wall: #7c5638; --wall-dk: #5c3d26; --floor: #86603e; --floor-dk: #654529; --beam-a: 0; --lamp: 1; --stars: 1; --moon: 1; --tint: 0; --tint-c: #141a48; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 

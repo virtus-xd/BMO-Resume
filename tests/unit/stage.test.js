@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { coverScale, stageOffsetY, W, H } from "../../src/scene/stage.js";
-import { SLOTS, ROOM_SVG, OBJECTS } from "../../src/scene/room.svg.js";
+import { SLOTS } from "../../src/scene/room.svg.js";
 
 describe("coverScale", () => {
   it("geniş ekranda sahneyi kaplar (+%4 parallax payı)", () => {
@@ -27,8 +27,5 @@ describe("room", () => {
   });
   it("yuvalar dikeyde de güvenli: ~2.1:1 ekranda kırpılmayan bant içinde (y ≤ 980)", () => {
     SLOTS.forEach((s) => expect(s.y).toBeLessThanOrEqual(980));
-  });
-  it("her Finn/Jake nesnesi tıklanabilir grup olarak var", () => {
-    OBJECTS.forEach((o) => expect(ROOM_SVG).toContain(`data-obj="${o}" role="button"`));
   });
 });

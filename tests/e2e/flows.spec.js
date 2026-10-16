@@ -72,13 +72,6 @@ test("hareketi azalt: zoom yerine ortada panel açılır", async ({ page }) => {
   await expect(page.locator("#sTitle")).toHaveText("81 Okey");
 });
 
-test("Finn/Jake nesnesi tıklanınca BMO konuşur", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await ready(page);
-  await page.locator('[data-obj="viola"]').click();
-  await expect(page.locator("#speechText")).toContainText("viola", { timeout: 4000 });
-});
-
 test("localStorage engelliyken site açılır", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, "localStorage", { get() { throw new Error("blocked"); } });

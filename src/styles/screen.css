@@ -20,7 +20,7 @@
 .s-eject { margin-left: auto; background: #c0362e; color: #fff; border: 3px solid var(--ink); box-shadow: 0 3px 0 rgba(30, 10, 2, .4); }
 .s-actions a:focus-visible, .s-eject:focus-visible, .s-shots:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .screen-ui.panel { left: 50%; top: 50%; width: min(560px, 92vw); max-height: 84vh; height: auto; container-type: inline-size; transform: translate(-50%, -50%); border: 5px solid var(--ink); }
-#l0, #l1, #l3, .room-svg, .tapes { transition: filter .5s; }
-body.zoomed #l0, body.zoomed #l1, body.zoomed #l3, body.zoomed .room-svg, body.zoomed .tapes { filter: blur(4px) brightness(.7); }
+.tapes { transition: filter .5s; }
+body.zoomed .bg, body.zoomed .tapes { filter: blur(4px) brightness(.7); }
 body.zoomed .speech { display: none; }
 body.zoomed .note { display: none; }

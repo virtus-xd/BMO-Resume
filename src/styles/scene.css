@@ -1,9 +1,10 @@
 html, body { height: 100%; margin: 0; }
-body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-body); overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; transition: background-color .6s; }
+body { background: #3a2414; color: var(--paper); font-family: var(--f-body); overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; transition: background-color .6s; }
 .room { position: fixed; inset: 0; overflow: clip; } /* clip: odak da kaydıramaz (hidden kaydırılabilir) */
 .stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; }
 .camera { position: absolute; inset: 0; transform-origin: 0 0; }
 .layer { position: absolute; inset: 0; }
+.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: filter .5s; }
 .layer > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .tint { position: absolute; inset: 0; pointer-events: none; background: var(--tint-c); opacity: var(--tint); mix-blend-mode: multiply; transition: opacity .6s, background-color .6s; }
 .vignette { position: absolute; inset: -2px; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 55%, transparent 55%, rgba(28, 10, 3, .5)); }
@@ -45,7 +46,6 @@ body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-bo
 @keyframes drift { to { transform: translateX(160px); } }
 
 /* --- katman etkileşimi --- */
-#l0, #l1, #l3 { pointer-events: none; }
 .room-svg { pointer-events: none; }
 .obj { pointer-events: auto; cursor: pointer; outline: none; transition: filter .2s; }
 .obj:hover, .obj:focus-visible { filter: drop-shadow(0 0 10px rgba(255, 217, 138, .95)); }

@@ -8,11 +8,11 @@ import { PROJECTS, assignSlots } from "./data/projects.js";
 import { PROFILE } from "./data/profile.js";
 import { t, line, pickLang, applyI18n } from "./data/i18n.js";
 import { initStage, NARROW_QUERY } from "./scene/stage.js";
-import { SKY_SVG, WALL_SVG, ROOM_SVG, FRONT_SVG, SLOTS } from "./scene/room.svg.js";
+import { SLOTS } from "./scene/room.svg.js";
 import { initParallax } from "./scene/parallax.js";
+import { initBackground } from "./scene/background.js";
 import { SLICES, sliceForHour, applySlice } from "./scene/daycycle.js";
 import { initParticles } from "./scene/particles.js";
-import { initObjects } from "./scene/objects.js";
 import { BMO_SVG } from "./bmo/bmo.svg.js";
 import { createFace } from "./bmo/faces.js";
 import { initBehavior } from "./bmo/behavior.js";
@@ -37,14 +37,11 @@ state.sound = store.get("sound") === "on";
 function applyLang() { document.documentElement.lang = state.lang; applyI18n(document, state.lang); }
 applyLang();
 
-/* --- sahne (DOM sırası = Tab sırası: kasetler → BMO → nesneler) --- */
-$("#l0").innerHTML = SKY_SVG;
-$("#l1").innerHTML = WALL_SVG;
-$("#l2").innerHTML = `<div class="tapes" id="tapes"></div><div class="bmo" id="bmo">${BMO_SVG}</div>` + ROOM_SVG +
-  `<div class="beam"></div><canvas class="particles" id="particles"></canvas>`;
-$("#l3").innerHTML = FRONT_SVG;
+/* --- sahne (DOM sırası = Tab sırası: kasetler → BMO) --- */
+$("#l2").innerHTML = `<div class="tapes" id="tapes"></div><div class="bmo" id="bmo">${BMO_SVG}</div><canvas class="particles" id="particles"></canvas>`;
 
 const view = initStage($("#stage"), { onLayout: (v) => { state.narrow = v.narrow; } });
+const background = initBackground({ dayEl: $("#bgDay"), nightEl: $("#bgNight"), state, bus, reduced });
 const parallax = reduced ? null : initParallax([...document.querySelectorAll(".layer")], state);
 if (!reduced) initParticles($("#particles"), state);
 
@@ -53,7 +50,6 @@ const faceEl = $("#bmo-face");
 const face = createFace(faceEl);
 face.setBase("idle");
 const bmo = initBehavior({ bmoEl: $("#bmo"), faceEl, face, bus, state, reduced });
-initObjects({ root: document, bus, state, reduced });
 
 /* --- ses + konuşma --- */
 const sfx = createSfx();
