@@ -7,8 +7,8 @@ export const BMO_SVG = `
   <ellipse class="bmo-shadow" cx="148" cy="404" rx="118" ry="12"/>
   <g id="bmo-leg-l" class="limb"><path d="M108 330V392h-20"/></g>
   <g id="bmo-leg-r" class="limb"><path d="M180 330V392h20"/></g>
-  <g id="bmo-arm-l" class="limb"><path d="M20 196C-4 212-6 248 4 270"/></g>
-  <g id="bmo-arm-r" class="limb"><path d="M270 196C294 212 296 248 286 270"/></g>
+  <g id="bmo-arm-l" class="limb"><path d="M20 190C-8 206-14 262-2 302"/></g>
+  <g id="bmo-arm-r" class="limb"><path d="M270 190C298 206 304 262 292 302"/></g>
   <g id="bmo-body">
     <rect class="bmo-side" x="28" y="18" width="252" height="324" rx="20"/>
     <rect class="bmo-front o" x="18" y="10" width="252" height="324" rx="20"/>

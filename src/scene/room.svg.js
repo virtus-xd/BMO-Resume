@@ -151,15 +151,20 @@ export const ROOM_SVG = `
 export const FRONT_SVG = `
 <svg viewBox="0 0 1920 1080" aria-hidden="true">
   <g id="vineL">
-    <path class="vine-stem" d="M60-20C80 120 40 230 84 380C100 440 90 500 70 560"/>
-    <ellipse class="c-leaf o" cx="92" cy="70" rx="34" ry="15" transform="rotate(28 92 70)"/>
-    <ellipse class="c-leaf-dk o" cx="40" cy="150" rx="32" ry="14" transform="rotate(-30 40 150)"/>
-    <ellipse class="c-leaf o" cx="96" cy="250" rx="36" ry="15" transform="rotate(24 96 250)"/>
-    <ellipse class="c-leaf-dk o" cx="52" cy="340" rx="30" ry="13" transform="rotate(-26 52 340)"/>
-    <ellipse class="c-leaf o" cx="104" cy="440" rx="30" ry="13" transform="rotate(30 104 440)"/>
-    <ellipse class="c-leaf-dk o" cx="56" cy="530" rx="26" ry="12" transform="rotate(-20 56 530)"/>
-    <path class="c-leaf-dk o" d="M-40 1120C40 980 130 930 220 950C150 1000 110 1060 100 1120Z"/>
-    <path class="c-leaf o" d="M-40 1060C20 980 80 960 150 980C90 1010 50 1050 40 1100Z"/>
+    <!-- 16:10 ekranlarda kenar kırpmasından kurtulsun diye içeride (kullanıcı geri bildirimi) -->
+    <g transform="translate(140 0)">
+      <path class="vine-stem" d="M60-20C80 120 40 230 84 380C100 440 90 500 70 560"/>
+      <ellipse class="c-leaf o" cx="92" cy="70" rx="34" ry="15" transform="rotate(28 92 70)"/>
+      <ellipse class="c-leaf-dk o" cx="40" cy="150" rx="32" ry="14" transform="rotate(-30 40 150)"/>
+      <ellipse class="c-leaf o" cx="96" cy="250" rx="36" ry="15" transform="rotate(24 96 250)"/>
+      <ellipse class="c-leaf-dk o" cx="52" cy="340" rx="30" ry="13" transform="rotate(-26 52 340)"/>
+      <ellipse class="c-leaf o" cx="104" cy="440" rx="30" ry="13" transform="rotate(30 104 440)"/>
+      <ellipse class="c-leaf-dk o" cx="56" cy="530" rx="26" ry="12" transform="rotate(-20 56 530)"/>
+    </g>
+    <g transform="translate(90 0)">
+      <path class="c-leaf-dk o" d="M-40 1120C40 980 130 930 220 950C150 1000 110 1060 100 1120Z"/>
+      <path class="c-leaf o" d="M-40 1060C20 980 80 960 150 980C90 1010 50 1050 40 1100Z"/>
+    </g>
   </g>
   <use href="#vineL" transform="translate(1920 0) scale(-1 1)"/>
 </svg>`;

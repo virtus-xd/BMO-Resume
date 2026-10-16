@@ -66,7 +66,7 @@ body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-bo
 .bmo-dpad { fill: var(--dpad); } .bmo-tri { fill: var(--tri); } .bmo-green { fill: var(--btn-g); } .bmo-red { fill: var(--btn-r); }
 .bmo-slit { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
 .bmo-shadow { fill: rgba(40, 16, 4, .35); }
-.limb path { fill: none; stroke: var(--ink); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.limb path { fill: none; stroke: var(--ink); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
 #bmo-slot-glow { fill: none; stroke: #ffd98a; stroke-width: 8; opacity: 0; transition: opacity .2s; filter: drop-shadow(0 0 8px #ffd98a); }
 .bmo.hungry #bmo-slot-glow { opacity: 1; }
 .reel-win { fill: #6b3f22; }
