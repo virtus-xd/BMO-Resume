@@ -29,8 +29,8 @@ ulaşmak.
 ## 3. Sahne düzeni
 
 - **Tasarım çerçevesi:** v1'deki gibi 1920×1080 `stage`, `cover` ölçekleme (`coverScale`, `stageOffsetY`) aynen kullanılır.
-  Stage içinde alttan üste: (1) arka plan `<img>` (3) three.js `<canvas>` (1920×1080 CSS, piksel oranı ≤ 2 ve toplam ≤ ~4 MP)
-  (4) parçacık canvas'ı (5) erişilebilir kaset düğmeleri katmanı. Böylece 3D sahne, hangi ekran oranı olursa olsun boyanmış zeminle
+  Stage içinde alttan üste: (1) arka plan `<img>` (2) three.js `<canvas>` (1920×1080 CSS, piksel oranı ≤ 2 ve toplam ≤ ~4 MP)
+  (3) parçacık canvas'ı (4) erişilebilir kaset düğmeleri katmanı. Böylece 3D sahne, hangi ekran oranı olursa olsun boyanmış zeminle
   birlikte ölçeklenir ve hizası bozulmaz.
 - **Kalibrasyon:** Kamera (FOV, konum, bakış noktası), BMO konumu/dönüşü/ölçeği ve kaset yuvaları `src/three/layout.js`'de tek
   yerde. Görsel geldiğinde bu değerler görsele göre ayarlanır. `?calib` parametresi zemin ızgarası ve yuva işaretleri çizer (yalnızca
