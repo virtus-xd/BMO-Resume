@@ -15,6 +15,9 @@ import { initParticles } from "./scene/particles.js";
 import { createSpeech } from "./ui/speech.js";
 import { createSfx } from "./audio/sfx.js";
 import { t, pickLang, applyI18n } from "./data/i18n.js";
+import { PROJECTS, assignSlots } from "./data/projects.js";
+import { SLOTS } from "./scene/room.svg.js";
+import { createTapes, placeTapes, bindDrag } from "./tapes/tape.js";
 
 const $ = (s) => document.querySelector(s);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -55,6 +58,33 @@ bus.on("say", (text) => speech.say(text));
 bus.on("sfx", (name) => sfx.play(name));
 bus.on("sound:change", (on) => sfx.setEnabled(on));
 addEventListener("resize", () => speech.place());
+
+/* kasetler */
+const { placed } = assignSlots(PROJECTS, SLOTS);
+const tapes = createTapes(placed.map((e) => e.project), state.lang);
+function layoutTapes() {
+  placeTapes({ tapes, placed, sceneHost: $("#tapes"), trayHost: $("#tray"), narrow: state.narrow, currentId: state.current?.id ?? null });
+}
+layoutTapes();
+matchMedia("(max-width: 700px), (orientation: portrait)").addEventListener("change", layoutTapes);
+
+function overBmo(x, y) {
+  const r = $("#bmo-slot").getBoundingClientRect();
+  return Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2)) < 220 * view.k;
+}
+const handlers = {
+  isBusy: () => state.busy,
+  overBmo,
+  onReach: (on) => bus.emit("reach", on),
+  onInsert: (p, ghost) => play(p, ghost),
+  onMiss: (p, ghost) => miss(p, ghost),
+};
+placed.forEach(({ project }) => bindDrag(tapes[project.id], project, handlers));
+document.addEventListener("tape:pick", () => bus.emit("sfx", "pick"));
+
+/* Görev 9'da değiştirilecek geçici akış */
+function play(p, ghost) { ghost?.remove(); tapes[p.id].classList.remove("gone"); console.info("play", p.id); }
+function miss(p, ghost) { ghost?.remove(); tapes[p.id].classList.remove("gone"); }
 
 bus.emit("say", t(state.lang, "welcome"));
 
