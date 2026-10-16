@@ -78,3 +78,4 @@ body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-bo
 #bmo-face .blush { fill: #f49ab0; opacity: .7; }
 #bmo-face .mono { font-family: var(--f-term); font-size: 30px; }
 #bmo-face .eyes { transform: translate(var(--ex, 0px), var(--ey, 0px)); transition: transform .12s; }
+.particles { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
