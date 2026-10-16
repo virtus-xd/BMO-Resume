@@ -40,7 +40,7 @@ test("Esc sonrası BMO'ya tıklamak ekranı yeniden açar, ⏏ kaseti yerine dö
   await expect(page.locator("#sTitle")).toHaveText("TBH Trade");
   await page.locator("#screenUi .s-eject").click();
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(tape).not.toHaveClass(/gone/, { timeout: 5000 });
+  await expect(tape).not.toHaveClass(/gone/);
   await expect(tape).toBeFocused();
 });
 
@@ -89,7 +89,7 @@ test("açık ekran 3D BMO ekranıyla hizalı ve pencere boyutu değişince gör�
   for (const [w, h] of [[1000, 1200], [1920, 1080], [800, 600]]) {
     await page.setViewportSize({ width: w, height: h });
     /* resize olayı headless'ta gecikebilir: düzen oturana kadar yeniden dene */
-    await expect.poll(() => inViewport(page), { timeout: 3000 }).toBe(true);
+    await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
   }
   await page.setViewportSize({ width: 1440, height: 900 });
   await expect.poll(aligned, { timeout: 5000 }).toBe(true);
@@ -109,7 +109,7 @@ test("dar düzende açılan ekran tam genişlik", async ({ page }) => {
   await ready(page);
   await page.locator('.tape[data-id="okey"]').click();
   await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
-  await expect.poll(() => inViewport(page), { timeout: 3000 }).toBe(true);
+  await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
   const box = await page.locator("#screenUi").boundingBox();
   expect(box.width).toBeGreaterThanOrEqual(375 - 32 - 1);
 });

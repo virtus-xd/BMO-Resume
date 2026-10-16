@@ -3,6 +3,7 @@ import "./styles/scene.css";
 import "./styles/ui.css";
 import "./styles/screen.css";
 import "./styles/listview.css";
+import { gsap } from "gsap";
 import { bus, state, store } from "./state.js";
 import { PROJECTS } from "./data/projects.js";
 import { PROFILE } from "./data/profile.js";
@@ -24,6 +25,10 @@ import { runLoader } from "./ui/loader.js";
 import { createSfx } from "./audio/sfx.js";
 
 const $ = (s) => document.querySelector(s);
+
+/* Kilidi tutan animasyonlar (takma, zoom, kamera dönüşü) yavaş cihazda da gerçek sürede bitsin:
+   GSAP'ın lag smoothing'i 500 ms'den uzun karelerde zamanı yavaşlatıp akışı saniyelerce kilitliyordu. */
+gsap.ticker.lagSmoothing(0);
 const params = new URLSearchParams(location.search);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -85,7 +90,7 @@ async function bootWorld() {
     canvas: $("#world"), state, bus, reduced, projects: PROJECTS, lang: state.lang,
     calib: params.has("calib"), onCameraChange: () => { if (!state.narrow) relayout(); },
   });
-  if (params.has("test")) window.__world = world;
+  if (params.has("test")) Object.assign(window, { __world: world, __state: state });
 
   face = createFace((n) => world.bmo.setFace(n));
   face.setBase("idle");
