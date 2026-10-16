@@ -12,7 +12,7 @@ import { W, H } from "../scene/stage.js";
 const LIGHTS = {
   morning: { sky: 0xfff4e6, ground: 0x7a5434, hemi: 1.25, sun: 1.8, sunColor: 0xffe2b8, lamp: 0, label: 1 },
   noon: { sky: 0xf4f8ff, ground: 0x7a5434, hemi: 1.3, sun: 2.0, sunColor: 0xfff0d0, lamp: 0, label: 1 },
-  sunset: { sky: 0xffd2b0, ground: 0x6a3a24, hemi: 1.1, sun: 1.6, sunColor: 0xffa060, lamp: 0.6, label: 0.92 },
+  sunset: { sky: 0xfff0e2, ground: 0x7a4a30, hemi: 1.25, sun: 1.7, sunColor: 0xffc898, lamp: 0.5, label: 0.95 },
   night: { sky: 0x6b7bd6, ground: 0x3a2414, hemi: 0.7, sun: 0.35, sunColor: 0x9fb4ff, lamp: 1.6, label: 0.72 },
 };
 

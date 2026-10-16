@@ -52,13 +52,12 @@ let face = null;
 const sfx = createSfx();
 sfx.setEnabled(state.sound);
 const speech = createSpeech({
-  bubbleEl: $("#speech"), textEl: $("#speechText"), liveEl: $("#live"), anchorEl: $("#bmoHit"),
-  onBlip: () => sfx.play("blip"), onTalk: (on) => face?.talk(on), isNarrow: () => state.narrow,
+  bubbleEl: $("#speech"), textEl: $("#speechText"), liveEl: $("#live"),
+  onBlip: () => sfx.play("blip"), onTalk: (on) => face?.talk(on),
 });
 bus.on("say", (text) => speech.say(text));
 bus.on("sfx", (name) => sfx.play(name));
 bus.on("sound:change", (on) => sfx.setEnabled(on));
-addEventListener("resize", () => speech.place());
 
 let screen = null;
 const byId = (id) => PROJECTS.find((p) => p.id === id);

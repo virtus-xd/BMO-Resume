@@ -1,23 +1,40 @@
-/* --- konuşma balonu --- */
-.speech { position: fixed; z-index: 12; max-width: min(340px, calc(100vw - 32px)); padding: 12px 16px 10px; background: var(--paper); color: var(--ink);
-  border: 3px solid var(--ink); border-radius: 22px 22px 22px 6px; box-shadow: 0 5px 0 rgba(30, 10, 2, .35); pointer-events: none; }
-.speech::before { content: ""; position: absolute; left: -14px; bottom: 8px; width: 18px; height: 18px; background: var(--paper);
-  border-left: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: skewY(-35deg); }
-.speech p { margin: 0; font-family: var(--f-hand); font-size: 22px; line-height: 1.15; min-height: 1.15em; }
-.speech small { display: block; margin-top: 6px; font-size: 12px; font-weight: 700; color: #7a5a40; }
-.speech.docked { left: 16px; right: 16px; top: calc(76px + env(safe-area-inset-top, 0px)); max-width: none; border-radius: 18px; }
-.speech.docked::before, .speech.docked small { display: none; }
+/* --- BMO'nun terminal tarzı diyalog kutusu: altta ortada --- */
+.speech { position: fixed; z-index: 12; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transition: opacity .6s, visibility .6s; transform: translateX(-50%); box-sizing: border-box;
+  width: min(720px, calc(100% - 32px)); padding: 10px 16px 9px; pointer-events: none; font-family: var(--f-term); color: #9df2b4;
+  background: repeating-linear-gradient(0deg, rgba(157, 242, 180, .035) 0 2px, transparent 2px 4px), rgba(8, 18, 12, .88);
+  border: 2px solid #4fae6d; border-radius: 10px; box-shadow: inset 0 0 22px rgba(79, 174, 109, .22), 0 0 0 3px rgba(8, 18, 12, .55), 0 8px 18px rgba(10, 4, 0, .45); }
+.speech.rest { opacity: 0; visibility: hidden; }
+.speech p { margin: 0; font-size: 22px; line-height: 1.2; min-height: 1.2em; text-shadow: 0 0 6px rgba(157, 242, 180, .35); }
+.speech .who { color: #ffd36b; text-shadow: 0 0 6px rgba(255, 211, 107, .35); }
+#speechText::after { content: "▌"; margin-left: 2px; animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.speech small { display: block; margin-top: 4px; font-size: 15px; color: #5c9c6e; }
+@media (prefers-reduced-motion: reduce) { #speechText::after { animation: none; } }
 
-/* --- dar düzen kaset rafı --- */
+/* --- dar düzen kaset rafı: bg2'nin kendi boyalı tahtası, mürekkep kontur, ön çıta; kasetler hafif eğik durur --- */
 .tray { display: none; }
+:root { --tray-wood: url(/bg/day-1920.webp); }
+.t-night { --tray-wood: url(/bg/night-1920.webp); }
 @media (max-width: 700px), (orientation: portrait) {
-  .tray { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; gap: 14px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory;
-    padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-    background: linear-gradient(180deg, var(--wood) 0 10px, var(--wood-dk) 10px); border-top: 4px solid var(--ink); box-shadow: 0 -6px 0 rgba(30, 10, 2, .3); }
+  :root { --tray-h: calc(112px + env(safe-area-inset-bottom, 0px)); }
+  .tray { display: flex; align-items: flex-end; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; box-sizing: border-box; height: var(--tray-h);
+    gap: 12px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-snap-type: x mandatory;
+    padding: 0 max(20px, env(safe-area-inset-right, 0px)) calc(19px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+    background:
+      linear-gradient(180deg, rgba(255, 228, 176, .3), transparent 7px),
+      linear-gradient(0deg, #4a2a14 calc(13px + env(safe-area-inset-bottom, 0px)), var(--ink) 0 calc(16px + env(safe-area-inset-bottom, 0px)), rgba(255, 220, 160, .18) 0 calc(18px + env(safe-area-inset-bottom, 0px)), transparent 0),
+      linear-gradient(180deg, rgba(40, 18, 6, .2), rgba(40, 18, 6, .62)),
+      var(--tray-wood) 46% 97% / 1500px auto;
+    border-top: 3px solid var(--ink);
+    box-shadow: 0 -10px 22px rgba(20, 8, 2, .45), inset 0 8px 12px rgba(20, 8, 2, .35); }
   .tray::-webkit-scrollbar { display: none; }
-  .tray .tape { position: relative; flex: 0 0 auto; touch-action: pan-x; scroll-snap-align: start; transition: transform .2s; }
-  .tray .tape:hover { transform: translateY(-2px); }
-  .tray .tape .thumb { display: block; width: 112px; height: auto; filter: drop-shadow(0 4px 0 rgba(30, 10, 2, .35)); }
+  .tray .tape { position: relative; flex: 0 0 auto; padding: 0; touch-action: pan-x; scroll-snap-align: center; transform: rotate(var(--tilt, 0deg)); transform-origin: 50% 100%; transition: transform .2s; }
+  .tray .tape:nth-child(3n + 1) { --tilt: -2.5deg; }
+  .tray .tape:nth-child(3n + 2) { --tilt: 1.5deg; }
+  .tray .tape:nth-child(3n) { --tilt: -0.5deg; }
+  .tray .tape:hover, .tray .tape:focus-visible { transform: translateY(-5px) rotate(0deg); }
+  .tray .tape .thumb { display: block; width: 104px; height: auto; filter: drop-shadow(0 5px 3px rgba(20, 8, 2, .55)); }
+  .speech { bottom: calc(var(--tray-h) + 12px); }
   .speech small { display: none; }
 }
 
