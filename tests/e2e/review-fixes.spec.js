@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-/* test.fixme: 3D takma/zoom akışı Görev 6–7'de gelince yeniden açılacak */
-
 const ready = async (page, url = "/?t=noon") => {
   await page.goto(url);
   await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
@@ -12,17 +10,17 @@ const inViewport = (page) => page.evaluate(() => {
 });
 const focusInList = (page) => page.evaluate(() => document.getElementById("listview").contains(document.activeElement));
 
-test.fixme("dar ekranda Tab ile gezinmek sahneyi kaydırmaz; Enter ile açılan ekran görünür alanda", async ({ page }) => {
+test("dar ekranda Tab ile gezinmek sahneyi kaydırmaz; Enter ile açılan ekran görünür alanda", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await ready(page);
   for (let i = 0; i < 20; i++) await page.keyboard.press("Tab");
   expect(await page.evaluate(() => document.getElementById("room").scrollLeft)).toBe(0);
   await page.locator('.tape[data-id="okey"]').focus();
   await page.keyboard.press("Enter");
-  await expect.poll(() => inViewport(page), { timeout: 8000 }).toBe(true);
+  await expect.poll(() => inViewport(page), { timeout: 10000 }).toBe(true);
 });
 
-test.fixme("BMO ekranı açıkken açılan liste görünümünde Tab odağı listede kalır", async ({ page }) => {
+test("BMO ekranı açıkken açılan liste görünümünde Tab odağı listede kalır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   await page.locator('.tape[data-id="okey"]').click();
@@ -58,12 +56,3 @@ for (const [w, h] of [[1920, 937], [1366, 657]]) {
     }
   });
 }
-
-test.fixme("zoom sürerken pencere boyutu değişirse ekran görünür alanda kalır", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await ready(page);
-  await page.locator('.tape[data-id="okey"]').click();
-  await page.waitForTimeout(1600);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
-});

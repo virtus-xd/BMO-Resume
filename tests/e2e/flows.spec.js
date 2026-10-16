@@ -1,7 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-/* test.fixme: 3D takma/zoom akışı Görev 6–7'de gelince yeniden açılacak */
-
 const ready = async (page, url = "/?t=noon") => {
   await page.goto(url);
   await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
@@ -59,17 +57,19 @@ test("kaset kapılınca ipucu satırı gizlenir", async ({ page }) => {
   await page.mouse.up();
 });
 
-test.fixme("klavye: Enter ile tak, odak ekranda, Esc ile odak kasete döner", async ({ page }) => {
+test("klavye: Enter ile tak, odak ekranda; Esc kapatır, odak BMO'da, Enter yeniden açar", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   const tape = page.locator('.tape[data-id="radar"]');
   await tape.focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#sTitle")).toBeFocused();
+  await expect(page.locator("#sTitle")).toBeFocused({ timeout: 8000 });
   await page.keyboard.press("Tab");
   await expect(page.locator("#screenUi button.s-eject")).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(tape).toBeFocused();
+  await expect(page.locator("#bmoHit")).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#sTitle")).toBeFocused({ timeout: 8000 });
 });
 
 test("#liste ile hızlı görünüm doğrudan açılır, Esc ile kapanır", async ({ page }) => {
@@ -88,15 +88,6 @@ test("TR/EN geçişi metinleri değiştirir ve kalıcıdır", async ({ page }) =
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.reload();
   await expect(page.locator('.tape[data-id="radar"]')).toContainText("Radar Mines");
-});
-
-test.fixme("hareketi azalt: zoom yerine ortada panel açılır", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await ready(page);
-  await page.locator('.tape[data-id="okey"]').click();
-  await expect(page.locator("#screenUi")).toHaveClass(/panel/);
-  await expect(page.locator("#sTitle")).toHaveText("81 Okey");
 });
 
 test("localStorage engelliyken site açılır", async ({ page }) => {

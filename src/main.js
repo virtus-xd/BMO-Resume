@@ -55,8 +55,7 @@ bus.on("sfx", (name) => sfx.play(name));
 bus.on("sound:change", (on) => sfx.setEnabled(on));
 addEventListener("resize", () => speech.place());
 
-/* --- BMO ekranı: 3D zoom Görev 7'de; o zamana kadar ortada panel --- */
-const screen = createScreen({ cameraEl: $("#stage"), uiEl: $("#screenUi"), backdropEl: $("#screenBackdrop"), view, state, bus, reduced: true, parallax: null, projects: PROJECTS });
+let screen = null;
 const byId = (id) => PROJECTS.find((p) => p.id === id);
 
 /* BMO'ya tıklama: kaset takılıysa ekranı yeniden açar, değilse kıkırdar */
@@ -73,6 +72,7 @@ function relayout() {
   if (!world) return;
   world.resize();
   world.tapes.forEach((tape, id) => { if (state.current?.id !== id && !state.busy) tape.group.visible = !state.narrow; });
+  if (state.zoomed) { screen?.relayout(); return; } // zoomdayken kamera ekranda: düğmeler gizli, ekran yeniden hizalanır
   tapeBtns.layout();
   const r = world.bmoRect();
   Object.assign($("#bmoHit").style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
@@ -99,6 +99,11 @@ async function bootWorld() {
     rectOf: world.rectOf, narrow: () => state.narrow, thumbOf: world.thumbOf,
   });
   const choreo = createChoreo({ world, bus, state, reduced, notesHost: $("#stage") });
+  screen = createScreen({
+    uiEl: $("#screenUi"), backdropEl: $("#screenBackdrop"), world, view, state, bus, reduced, projects: PROJECTS,
+    bgEls: [$("#bgDay"), $("#bgNight")],
+    insets: () => ({ top: $("#topbar").getBoundingClientRect().bottom, bottom: state.narrow ? innerHeight - $("#tray").getBoundingClientRect().top : 0 }),
+  });
   flow = createFlow({ anim: choreo, buttons: tapeBtns, bus, state, screen });
   const hideHint = () => { $("#speechHint").hidden = true; };
   Object.entries(tapeBtns.buttons).forEach(([id, b]) => {
@@ -122,8 +127,9 @@ async function bootWorld() {
 }
 const worldReady = bootWorld().catch((e) => { console.error("[world]", e); return null; });
 
-/* Esc / dışarı tıklama / ⏏ — Görev 7'de kapat ve çıkar ayrılır */
-bus.on("screen:closed", () => flow?.eject());
+/* Esc / dışarı tıklama: ekran kapanır, kaset BMO'da kalır (odak BMO'ya). ⏏: kaset çıkar. */
+bus.on("screen:close", () => flow?.close().then((ok) => { if (ok) $("#bmoHit").focus({ preventScroll: true }); }));
+bus.on("screen:eject", () => flow?.eject());
 bus.on("tape:loaded", (p) => sfx.startLoop(p.id));
 bus.on("tape:ejected", () => sfx.stopLoop());
 
@@ -134,7 +140,7 @@ bus.on("lang:change", () => {
   applyLang();
   world?.tapes.forEach((tape) => tape.setLabel(state.lang));
   tapeBtns?.relabel(state.lang);
-  screen.rerender();
+  screen?.rerender();
 });
 
 /* --- açılış --- */

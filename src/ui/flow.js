@@ -55,10 +55,11 @@ export function createFlow({ anim, buttons, bus, state, screen }) {
     });
   }
 
-  /* Esc / dışarı tıklama: ekran kapanır, kaset BMO'da kalır */
+  /* Esc / dışarı tıklama: ekran kapanır, kaset BMO'da kalır. Kamera geri dönerken kilit tutulmaz:
+     hemen BMO'ya ya da başka kasete tıklanabilir (yeni zoom/çıkarma dönüşü keser ya da bekler). */
   function close() {
     if (state.busy || !state.current) return Promise.resolve(false);
-    return locked("loaded", () => screen.close());
+    return locked("loaded", async () => { screen.close(); });
   }
 
   /* ⏏: önce ekranı kapat, sonra kaset yuvadan fırlayıp yerine seker */

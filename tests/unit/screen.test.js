@@ -1,22 +1,36 @@
 import { describe, it, expect } from "vitest";
-import { cameraFor, renderScreen } from "../../src/ui/screen.js";
+import { renderScreen, visibleRegion } from "../../src/ui/screen.js";
 import { esc } from "../../src/ui/html.js";
 
-const RECT = { x: 860, y: 596, w: 200, h: 146 };
-
-describe("cameraFor", () => {
-  it.each([[1440, 900, 0], [375, 812, -200]])("ekran merkezini görüntünün ortasına getirir (%i×%i)", (vw, vh, oy) => {
-    const k = Math.max(vw / 1920, vh / 1080) * 1.04;
-    const c = cameraFor(RECT, vw, vh, k, 0.8, oy);
-    const cx = RECT.x + RECT.w / 2, cy = RECT.y + RECT.h / 2;
-    /* sahne → ekran: v = merkez + oy + k * (kamera(p) - sahneMerkezi) */
-    expect(vw / 2 + k * (c.x + c.scale * cx - 960)).toBeCloseTo(vw / 2);
-    expect(vh / 2 + oy + k * (c.y + c.scale * cy - 540)).toBeCloseTo(vh / 2);
+describe("visibleRegion", () => {
+  it("16:9 ekranda kırpılmamış bölge merkezde ve neredeyse tüm stage", () => {
+    const k = (1920 / 1920) * 1.04;
+    const v = visibleRegion({ k, oy: 0 }, 1920, 1080);
+    expect(v.cx).toBeCloseTo(0); expect(v.cy).toBeCloseTo(0);
+    expect(v.w).toBeCloseTo(2 / 1.04); expect(v.h).toBeCloseTo(2 / 1.04);
   });
-  it("ekran hiçbir kenarda fill oranını aşmaz", () => {
-    const k = 1.04, c = cameraFor(RECT, 1440, 900, k, 0.8, 0);
-    expect(RECT.w * k * c.scale).toBeLessThanOrEqual(0.8 * 1440 + 0.001);
-    expect(RECT.h * k * c.scale).toBeLessThanOrEqual(0.8 * 900 + 0.001);
+  it("geniş ekranda dikey kırpma: görünür yükseklik azalır", () => {
+    const k = Math.max(1920 / 1920, 937 / 1080) * 1.04;
+    const v = visibleRegion({ k, oy: 0 }, 1920, 937);
+    expect(v.h).toBeLessThan(v.w);
+    expect(v.h).toBeCloseTo((937 / k / 1080) * 2);
+  });
+  it("üst/alt pay görünür bölgeyi daraltır ve merkezi kaydırır", () => {
+    const k = 1;
+    const a = visibleRegion({ k, oy: 0 }, 1000, 800);
+    const b = visibleRegion({ k, oy: 0 }, 1000, 800, { top: 100, bottom: 0 });
+    expect(b.h).toBeCloseTo(a.h - (100 / 1080) * 2);
+    expect(b.cy).toBeLessThan(a.cy); // alt yarıya kayar (NDC y aşağı negatif)
+  });
+  it("dar düzende stage kaydırması (oy) merkezi taşır", () => {
+    const v = visibleRegion({ k: 1, oy: -100 }, 400, 800);
+    /* ekran merkezi stage merkezinin 100 px altında görünür → NDC y negatif */
+    expect(v.cy).toBeCloseTo(-(100 / 1080) * 2);
+  });
+  it("görünür bölge stage dışına taşmaz (canvas yalnız stage'i kaplar)", () => {
+    const v = visibleRegion({ k: 1, oy: -300 }, 400, 800);
+    expect(1 - v.cy + v.h / 2).toBeLessThanOrEqual(2 + 1e-9); // alt kenar NDC -1'in altına inmez
+    expect(v.cy - v.h / 2).toBeGreaterThanOrEqual(-1 - 1e-9);
   });
 });
 

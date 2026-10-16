@@ -1,49 +1,125 @@
 import { test, expect } from "@playwright/test";
 
-/* test.fixme: 3D takma/zoom akışı Görev 6–7'de gelince yeniden açılacak */
-
-const ready = async (page) => {
-  await page.goto("/?t=noon");
+const ready = async (page, url = "/?t=noon") => {
+  await page.goto(url);
+  await expect(page.locator("#loader")).toBeHidden({ timeout: 8000 });
   await expect(page.locator('.tape[data-id="okey"]')).toBeVisible();
-  await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 }).catch(() => {}); // Görev 11'den önce loader yok
 };
+const inViewport = (page) => page.evaluate(() => {
+  const el = document.getElementById("screenUi"), r = el.getBoundingClientRect();
+  return !el.hidden && r.width > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1;
+});
 
-test.fixme("kasete tıklayınca proje BMO ekranında açılır, Esc ile kaset yerine döner", async ({ page }) => {
+test("kasete tıklayınca proje BMO ekranında açılır, Esc ile ekran kapanır ve kaset BMO'da kalır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   const tape = page.locator('.tape[data-id="okey"]');
   await tape.click();
-  await expect(page.locator("#screenUi")).toBeVisible();
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
   await expect(page.locator("#sTitle")).toHaveText("81 Okey");
   await expect(page.locator("#sTitle")).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(tape).toBeVisible();
+  await expect(tape).toHaveClass(/gone/);
+  await expect(page.locator("#bmoHit")).toBeFocused();
+});
+
+test("Esc sonrası BMO'ya tıklamak ekranı yeniden açar, ⏏ kaseti yerine döndürür", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  const tape = page.locator('.tape[data-id="tbh"]');
+  await tape.click();
+  /* başlık zoom sürerken (katman gizliyken) dolar: Esc'ten önce ekranın açılmasını bekle */
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#sTitle")).toHaveText("TBH Trade");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#screenUi")).toBeHidden();
+  await expect(tape).toHaveClass(/gone/);
+  await page.locator("#bmoHit").click();
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  await expect(page.locator("#sTitle")).toHaveText("TBH Trade");
+  await page.locator("#screenUi .s-eject").click();
+  await expect(page.locator("#screenUi")).toBeHidden();
+  await expect(tape).not.toHaveClass(/gone/, { timeout: 5000 });
   await expect(tape).toBeFocused();
 });
 
-test.fixme("animasyon sürerken ikinci kasete tıklama yok sayılır", async ({ page }) => {
+test("dışarı (arka plana) tıklamak ekranı kapatır, kaset kalır", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  await page.locator('.tape[data-id="radar"]').click();
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  await page.mouse.click(10, 890);
+  await expect(page.locator("#screenUi")).toBeHidden();
+  await expect(page.locator('.tape[data-id="radar"]')).toHaveClass(/gone/);
+});
+
+test("başka kaset takılınca öncekisi otomatik çıkar", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  await page.locator('.tape[data-id="okey"]').click();
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  await page.keyboard.press("Escape");
+  await page.locator('.tape[data-id="jarvis"]').click();
+  await expect(page.locator("#sTitle")).toHaveText("JARVIS", { timeout: 10000 });
+  await expect(page.locator('.tape[data-id="okey"]')).not.toHaveClass(/gone/);
+});
+
+test("animasyon sürerken ikinci kasete tıklama yok sayılır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
   /* gerçek kullanıcı gibi art arda hızlı tıklama: ikinci tıklama ölçülmüş koordinata, beklemeden */
-  const b = await page.locator('.tape[data-id="tbh"] .cas').boundingBox();
+  const b = await page.locator('.tape[data-id="tbh"]').boundingBox();
   await page.locator('.tape[data-id="okey"]').click();
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
-  await expect(page.locator("#sTitle")).toHaveText("81 Okey");
-  await expect(page.locator('.tape[data-id="tbh"]')).toBeVisible();
+  await expect(page.locator("#sTitle")).toHaveText("81 Okey", { timeout: 8000 });
+  await expect(page.locator('.tape[data-id="tbh"]')).not.toHaveClass(/gone/);
 });
 
-test.fixme("proje açıkken pencere boyutu değişince ekran görünür alanda kalır", async ({ page }) => {
+test("açık ekran 3D BMO ekranıyla hizalı ve pencere boyutu değişince görünür alanda kalır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await ready(page);
+  await ready(page, "/?t=noon&test");
   await page.locator('.tape[data-id="okey"]').click();
-  await expect(page.locator("#screenUi")).toBeVisible();
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  const aligned = () => page.evaluate(() => {
+    const s = window.__world.screenClientRect(), u = document.getElementById("screenUi").getBoundingClientRect();
+    return Math.abs((s.left + s.width / 2) - (u.left + u.width / 2)) < 6 && Math.abs((s.top + s.height / 2) - (u.top + u.height / 2)) < 6;
+  });
+  await expect.poll(aligned, { timeout: 5000 }).toBe(true);
   for (const [w, h] of [[1000, 1200], [1920, 1080], [800, 600]]) {
     await page.setViewportSize({ width: w, height: h });
     /* resize olayı headless'ta gecikebilir: düzen oturana kadar yeniden dene */
-    await expect.poll(async () => {
-      const b = await page.locator("#screenUi").boundingBox();
-      return b.x >= 0 && b.y >= 0 && b.x + b.width <= w + 1 && b.y + b.height <= h + 1;
-    }, { timeout: 3000 }).toBe(true);
+    await expect.poll(() => inViewport(page), { timeout: 3000 }).toBe(true);
   }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect.poll(aligned, { timeout: 5000 }).toBe(true);
+});
+
+test("zoom sürerken pencere boyutu değişirse ekran görünür alanda kalır", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  await page.locator('.tape[data-id="okey"]').click();
+  await page.waitForTimeout(1900); // takma bitti, zoom sürüyor
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
+});
+
+test("dar düzende açılan ekran tam genişlik", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await ready(page);
+  await page.locator('.tape[data-id="okey"]').click();
+  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  await expect.poll(() => inViewport(page), { timeout: 3000 }).toBe(true);
+  const box = await page.locator("#screenUi").boundingBox();
+  expect(box.width).toBeGreaterThanOrEqual(375 - 32 - 1);
+});
+
+test("hareketi azalt: zoom ve CRT yok, ortada panel", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  await page.locator('.tape[data-id="okey"]').click();
+  await expect(page.locator("#screenUi")).toHaveClass(/panel/);
+  await expect(page.locator("#sTitle")).toHaveText("81 Okey");
+  expect(await page.locator("#screenUi").evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
 });

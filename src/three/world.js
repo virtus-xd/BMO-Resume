@@ -3,7 +3,7 @@ import {
   Raycaster, RingGeometry, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
 } from "three";
 import { gsap } from "gsap";
-import { CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, TAPE_LEAN, makeCamera, projectRect } from "./layout.js";
+import { CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, TAPE_LEAN, makeCamera, projectRect, zoomPose } from "./layout.js";
 import { createBmo } from "./bmo.js";
 import { createTape3D, tapeThumbnail, TAPE } from "./tapes.js";
 import { W, H } from "../scene/stage.js";
@@ -109,7 +109,39 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
     camera.updateMatrixWorld();
     onCameraChange?.();
   }
-  function resetCamera() { par.x = par.y = 0; toX(0); toY(0); applyParallax(); }
+  function resetCamera() { par.x = par.y = 0; toX(0); toY(0); lookT.copy(target); applyParallax(); }
+
+  /* BMO ekranına zoom: ekran görünür bölgeyi (NDC) fill oranında dolduracak kamera pozu; uçuş GSAP ile */
+  const lookT = target.clone();
+  let camTween = null;
+  const homePose = () => ({ position: base.clone(), target: target.clone() });
+  function screenPose(visible, fill) {
+    bmo.setStill(true);
+    return zoomPose(bmo.screenFrame(), camera.fov, camera.aspect, visible, fill);
+  }
+  function snapCamera(pose) {
+    const to = pose || homePose();
+    camTween?.kill(); camTween = null;
+    camera.position.copy(to.position); lookT.copy(to.target);
+    camera.lookAt(lookT); camera.updateMatrixWorld();
+  }
+  function flyCamera(pose, duration = 0.8, ease = "power2.inOut") {
+    const to = pose || homePose();
+    camTween?.kill();
+    const p0 = camera.position.clone(), t0 = lookT.clone(), k = { t: 0 };
+    return new Promise((resolve) => {
+      camTween = gsap.to(k, {
+        t: 1, duration, ease,
+        onUpdate: () => {
+          camera.position.lerpVectors(p0, to.position, k.t);
+          lookT.lerpVectors(t0, to.target, k.t);
+          camera.lookAt(lookT); camera.updateMatrixWorld();
+        },
+        onComplete: () => { camTween = null; resolve(); },
+        onInterrupt: resolve,
+      });
+    });
+  }
 
   /* yansıtma yardımcıları (stage pikseli) */
   const boxCorners = (box) => {
@@ -163,7 +195,7 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   /* döngü */
   function frame(t) {
     if (document.hidden) return;
-    if (parDirty && !state.zoomed) applyParallax();
+    if (parDirty && !state.zoomed && !camTween) applyParallax(); // kamera uçarken parallax karışmaz
     bmo.tick(t);
     renderer.render(scene, camera);
   }
@@ -181,5 +213,6 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   return {
     bmo, tapes, camera, scene, renderer, target,
     rectOf, bmoRect, screenClientRect, toClient, setSlice, pause, render, resize, resetCamera, pick, floorPoint, thumbOf,
+    screenPose, flyCamera, snapCamera,
   };
 }

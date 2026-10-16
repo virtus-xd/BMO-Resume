@@ -44,6 +44,14 @@ describe("createFlow", () => {
     expect(anim.eject3D).not.toHaveBeenCalled();
   });
 
+  it("close kilidi kameranın geri dönüşünü beklemez (hemen yeniden etkileşim)", async () => {
+    await flow.play(A);
+    screen.close.mockImplementationOnce(() => new Promise(() => {}));
+    await flow.close();
+    expect(flow.isBusy()).toBe(false);
+    expect(await flow.play(A)).toBe(true);
+  });
+
   it("aynı kaset yüklüyken play yalnız ekranı açar", async () => {
     await flow.play(A);
     await flow.close();

@@ -19,7 +19,10 @@
 .s-actions a { background: var(--bmo-face); color: var(--bmo-screen); border: 0; }
 .s-eject { margin-left: auto; background: #c0362e; color: #fff; border: 3px solid var(--ink); box-shadow: 0 3px 0 rgba(30, 10, 2, .4); }
 .s-actions a:focus-visible, .s-eject:focus-visible, .s-shots:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.screen-ui.full { border: 4px solid var(--ink); }
+@media (prefers-reduced-motion: reduce) { .screen-ui.on { animation: none; } }
 .screen-ui.panel { left: 50%; top: 50%; width: min(560px, 92vw); max-height: 84vh; height: auto; container-type: inline-size; transform: translate(-50%, -50%); border: 5px solid var(--ink); }
 body.zoomed .bg { filter: blur(4px) brightness(.7); }
+body.zoomed .tape-btns, body.zoomed .bmo-hit, body.zoomed .particles { visibility: hidden; }
 body.zoomed .speech { display: none; }
 body.zoomed .note { display: none; }

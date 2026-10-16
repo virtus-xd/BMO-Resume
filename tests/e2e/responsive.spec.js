@@ -1,9 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-/* test.fixme: 3D takma/zoom akışı Görev 6–7'de gelince yeniden açılacak */
-
 for (const [w, h] of [[375, 812], [768, 1024], [1440, 900], [2560, 1440]]) {
-  test.fixme(`${w}×${h}: yatay kaydırma yok, kasetler erişilebilir, ekran görüntüsü`, async ({ page }) => {
+  test(`${w}×${h}: yatay kaydırma yok, kasetler erişilebilir, ekran görüntüsü`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto("/?t=sunset");
     await expect(page.locator("#loader")).toBeHidden({ timeout: 5000 });
