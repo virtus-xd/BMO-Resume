@@ -45,6 +45,14 @@ export function initBehavior({ bmoEl, faceEl, face, bus, state, reduced }) {
       .to(bmoEl, { rotation: 0, y: 0, duration: 0.2 });
   }
 
+  function wave() {
+    if (reduced) return;
+    gsap.timeline()
+      .to("#bmo-arm-r", { rotation: -110, transformOrigin: "0% 0%", duration: 0.25, ease: "power2.out" })
+      .to("#bmo-arm-r", { rotation: -80, duration: 0.18, yoyo: true, repeat: 3, ease: "sine.inOut" })
+      .to("#bmo-arm-r", { rotation: 0, duration: 0.3, ease: "back.out(2)" });
+  }
+
   if (!reduced) {
     gsap.to("#bmo-body", { scaleY: 0.985, scaleX: 1.008, transformOrigin: "50% 100%", duration: 1.7, ease: "sine.inOut", yoyo: true, repeat: -1 });
     gsap.to("#bmo-leg-l", { rotation: 10, transformOrigin: "50% 0%", duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: -1 });
@@ -61,5 +69,5 @@ export function initBehavior({ bmoEl, faceEl, face, bus, state, reduced }) {
     }, 20000 + Math.random() * 20000);
   })();
 
-  return { dance };
+  return { dance, wave };
 }

@@ -30,3 +30,6 @@
 .t-night   { --sky: #1c2350; --sky2: #2c3570; --hill: #28465a; --hill2: #355a6a; --sun: #f3f1d8; --wall: #7c5638; --wall-dk: #5c3d26; --floor: #86603e; --floor-dk: #654529; --beam-a: 0; --lamp: 1; --stars: 1; --moon: 1; --tint: .28; --tint-c: #141a48; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* hidden özniteliği her zaman kazanır (ör. .loader { display: grid } onu ezmesin) */
+[hidden] { display: none !important; }
