@@ -30,6 +30,8 @@ export const STRINGS = {
     contact: "İletişim",
     projects: "Projeler",
     footer_note: "BMO fan-art'ıdır. Adventure Time © Cartoon Network.",
+    doc_title: "Erdem — Portfolyo",
+    no3d: "Tarayıcın 3D sahneyi desteklemiyor; projeler burada.",
   },
   en: {
     tagline: "Computer Eng. · Web & Games",
@@ -62,6 +64,8 @@ export const STRINGS = {
     contact: "Contact",
     projects: "Projects",
     footer_note: "BMO is fan art. Adventure Time © Cartoon Network.",
+    doc_title: "Erdem — Portfolio",
+    no3d: "Your browser doesn't support the 3D scene; here are the projects.",
   },
 };
 

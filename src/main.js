@@ -38,8 +38,23 @@ state.slice = SLICES.includes(forced) ? forced : sliceForHour(new Date().getHour
 applySlice(document.documentElement, state.slice);
 state.lang = pickLang(store.get("lang"), navigator.language);
 state.sound = store.get("sound") === "on";
-function applyLang() { document.documentElement.lang = state.lang; applyI18n(document, state.lang); }
+function applyLang() {
+  document.documentElement.lang = state.lang;
+  document.title = t(state.lang, "doc_title");
+  applyI18n(document, state.lang);
+}
 applyLang();
+
+/* fontlar: Google Fonts CSS'i (preload → stylesheet) uygulanınca üç yazı tipini açıkça yükle */
+const FONTS = ['1em "Gochi Hand"', "1em VT323", '700 1em Nunito'];
+const fontCss = new Promise((resolve) => {
+  const link = document.querySelector('link[href*="fonts.googleapis.com/css"]');
+  if (!link || link.sheet) { resolve(); return; }
+  link.addEventListener("load", () => requestAnimationFrame(() => resolve()), { once: true });
+  link.addEventListener("error", () => resolve(), { once: true });
+}).then(() => Promise.all(FONTS.map((f) => document.fonts?.load(f))));
+/* yazı tipi gelmese de sahne en geç 2,5 sn'de kurulur (etiketler gelince yeniden çizilir) */
+const fontsReady = Promise.race([fontCss, new Promise((r) => setTimeout(r, 2500))]).catch(() => {});
 
 /* --- sahne --- */
 let world = null, tapeBtns = null, flow = null;
@@ -57,7 +72,11 @@ const speech = createSpeech({
 });
 bus.on("say", (text) => speech.say(text));
 bus.on("sfx", (name) => sfx.play(name));
-bus.on("sound:change", (on) => sfx.setEnabled(on));
+bus.on("sound:change", (on) => sfx.setEnabled(on, state.current?.id));
+/* AudioContext yalnızca kullanıcı etkileşiminde kurulur */
+const unlock = () => sfx.unlock();
+addEventListener("pointerdown", unlock, { once: true, capture: true });
+addEventListener("keydown", unlock, { once: true, capture: true });
 
 let screen = null;
 const byId = (id) => PROJECTS.find((p) => p.id === id);
@@ -82,11 +101,22 @@ function relayout() {
   Object.assign($("#bmoHit").style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
 }
 
+/* WebGL yoksa ya da bağlam kaybolursa: sahne bırakılır, Liste notla açılır */
+let fellBack = false;
+function fallback() {
+  if (fellBack) return;
+  fellBack = true;
+  world?.pause(true);
+  document.body.classList.add("no3d");
+  listview.setNo3d(true);
+}
+
 async function bootWorld() {
-  if (!hasWebGL()) return null; // yedek yol Görev 9'da
+  if (!hasWebGL()) { fallback(); return null; }
   const [{ createWorld }, { createChoreo }] = await Promise.all([import("./three/world.js"), import("./three/choreo3d.js")]);
+  $("#world").addEventListener("webglcontextlost", fallback);
   world = await createWorld({
-    canvas: $("#world"), state, bus, reduced, projects: PROJECTS, lang: state.lang,
+    canvas: $("#world"), state, bus, reduced, projects: PROJECTS, lang: state.lang, fontsReady,
     calib: params.has("calib"), onCameraChange: () => { if (!state.narrow) relayout(); },
   });
   if (params.has("test")) Object.assign(window, { __world: world, __state: state });
@@ -127,9 +157,13 @@ async function bootWorld() {
     });
   });
   relayout();
+  /* yazı tipi geç gelirse kaset etiketleri yeniden çizilir */
+  document.fonts?.addEventListener?.("loadingdone", () => {
+    world.tapes.forEach((tape) => tape.setLabel(state.lang));
+    if (state.narrow) tapeBtns.relabel(state.lang);
+  });
   return behavior;
 }
-const worldReady = bootWorld().catch((e) => { console.error("[world]", e); return null; });
 
 /* Esc / dışarı tıklama: ekran kapanır, kaset BMO'da kalır (odak BMO'ya). ⏏: kaset çıkar. */
 bus.on("screen:close", () => flow?.close().then((ok) => { if (ok) $("#bmoHit").focus({ preventScroll: true }); }));
@@ -140,6 +174,9 @@ bus.on("tape:ejected", () => sfx.stopLoop());
 /* --- üst çubuk, liste, dil --- */
 const listview = initListview({ el: $("#listview"), state, bus, projects: PROJECTS, profile: PROFILE });
 initTopbar({ state, bus, store, onList: () => listview.open() });
+/* Liste açıkken 3D döngü ve parçacıklar durur, boşta replikler susar (state.listOpen) */
+bus.on("list:toggle", (open) => { if (!fellBack) world?.pause(open); });
+const worldReady = bootWorld().catch((e) => { console.error("[world]", e); fallback(); return null; });
 bus.on("lang:change", () => {
   applyLang();
   world?.tapes.forEach((tape) => tape.setLabel(state.lang));
@@ -148,9 +185,10 @@ bus.on("lang:change", () => {
 });
 
 /* --- açılış --- */
-runLoader({ el: $("#loader"), barEl: $("#loaderBar"), ready: Promise.all([document.fonts?.ready, background.ready, worldReady]) })
+runLoader({ el: $("#loader"), barEl: $("#loaderBar"), waits: [fontsReady, background.ready, worldReady] })
   .then(() => worldReady)
   .then((behavior) => {
+    if (!behavior) return;
     bus.emit("say", t(state.lang, "welcome"));
-    behavior?.wave();
+    behavior.wave();
   });

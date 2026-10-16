@@ -1,4 +1,5 @@
-/* WebAudio sentez sesleri — dosya yok. Varsayılan kapalı; AudioContext ilk açık kullanımda kurulur. */
+/* WebAudio sentez sesleri — dosya yok. Varsayılan kapalı; AudioContext yalnız bir kullanıcı etkileşiminden (unlock)
+   sonra ve ses açıkken kurulur (tarayıcılar etkileşimsiz sesi engeller, konsol uyarısı da çıkmaz). */
 export const SCALE = [262, 294, 330, 392, 440, 523, 587, 659];
 
 export function hashId(id) {
@@ -16,10 +17,10 @@ export function tuneFor(id) {
 }
 
 export function createSfx(win = window) {
-  let ctx = null, on = false, loopT = 0;
+  let ctx = null, on = false, unlocked = false, loopT = 0;
 
   function ensure() {
-    if (!on) return null;
+    if (!on || !unlocked) return null;
     try {
       const AC = win.AudioContext || win.webkitAudioContext;
       if (!AC) return null;
@@ -54,7 +55,9 @@ export function createSfx(win = window) {
   function stopLoop() { clearInterval(loopT); }
 
   return {
-    setEnabled(v) { on = v; if (!v) stopLoop(); },
+    /* kaset takılıyken ses açılırsa onun ezgisi başlar */
+    setEnabled(v, currentId = null) { on = v; if (!v) stopLoop(); else if (currentId) this.startLoop(currentId); },
+    unlock() { if (unlocked) return; unlocked = true; if (on) ensure(); },
     play(name) { if (on) SOUNDS[name]?.(); },
     startLoop(id) {
       stopLoop(); if (!on) return;

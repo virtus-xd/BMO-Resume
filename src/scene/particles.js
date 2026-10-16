@@ -40,7 +40,7 @@ export function initParticles(canvas, state) {
   }
   (function tick(t) {
     requestAnimationFrame(tick);
-    if (document.hidden) return;
+    if (document.hidden || state.listOpen) return;
     ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, 1920, 1080);
     if (state.slice === "night") drawFlies(t); else drawDust(t);

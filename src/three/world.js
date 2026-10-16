@@ -16,9 +16,10 @@ const LIGHTS = {
   night: { sky: 0x6b7bd6, ground: 0x3a2414, hemi: 0.7, sun: 0.35, sunColor: 0x9fb4ff, lamp: 1.6, label: 0.72 },
 };
 
-export async function createWorld({ canvas, state, bus, reduced, projects, lang, calib = false, onCameraChange }) {
+export async function createWorld({ canvas, state, bus, reduced, projects, lang, calib = false, onCameraChange, fontsReady }) {
+  /* etiketler ve yüz canvas'a çizilmeden önce yazı tipleri */
   await Promise.all([
-    document.fonts?.load("62px 'Gochi Hand'"), document.fonts?.load("30px VT323"),
+    fontsReady, document.fonts?.load("62px 'Gochi Hand'"), document.fonts?.load("30px VT323"),
   ].map((p) => Promise.resolve(p).catch(() => {})));
 
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
@@ -199,6 +200,8 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
     bmo.tick(t);
     renderer.render(scene, camera);
   }
+  /* shader'lar yükleme ekranı sürerken derlensin: ilk karede ana iş parçacığı takılmasın */
+  await renderer.compileAsync?.(scene, camera).catch(() => {});
   renderer.setAnimationLoop(frame);
   function pause(on) { renderer.setAnimationLoop(on ? null : frame); }
   const render = () => renderer.render(scene, camera);

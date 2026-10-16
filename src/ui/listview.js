@@ -16,7 +16,7 @@ function card(p, lang) {
   </article>`;
 }
 
-export function renderList(projects, profile, lang) {
+export function renderList(projects, profile, lang, { no3d = false } = {}) {
   const about = projects.find((p) => p.id === "hakkimda");
   const rest = projects.filter((p) => p.id !== "hakkimda");
   const cv = profile.cv?.[lang];
@@ -26,7 +26,8 @@ export function renderList(projects, profile, lang) {
     profile.linkedin && linkA({ url: profile.linkedin, label: "LinkedIn" }),
   ].filter(Boolean);
   return `<div class="lv-inner">
-    <header class="lv-head"><h2 id="lvTitle" tabindex="-1">${esc(t(lang, "list_title"))}</h2><button type="button" class="lv-close" data-act="close">${esc(t(lang, "list_back"))}</button></header>
+    <header class="lv-head"><h2 id="lvTitle" tabindex="-1">${esc(t(lang, "list_title"))}</h2>${no3d ? "" : `<button type="button" class="lv-close" data-act="close">${esc(t(lang, "list_back"))}</button>`}</header>
+    ${no3d ? `<p class="lv-no3d" role="status">${esc(t(lang, "no3d"))}</p>` : ""}
     ${about ? `<p class="lv-about">${esc(loc(lang, about.desc))}</p>` : ""}
     ${cv ? `<p><a class="lv-cv" href="${esc(cv)}" download>${esc(t(lang, "cv"))}</a></p>` : ""}
     ${contacts.length ? `<section><h3>${esc(t(lang, "contact"))}</h3><p class="lv-contacts">${contacts.join("")}</p></section>` : ""}
@@ -39,8 +40,8 @@ export function renderList(projects, profile, lang) {
 const BEHIND = ["topbar", "room", "tray", "screenUi", "screenBackdrop", "fanart"];
 
 export function initListview({ el, state, bus, projects, profile }) {
-  let openedInApp = false, lastFocus = null;
-  const render = () => { el.innerHTML = renderList(projects, profile, state.lang); };
+  let openedInApp = false, lastFocus = null, no3d = false;
+  const render = () => { el.innerHTML = renderList(projects, profile, state.lang, { no3d }); };
 
   function sync() {
     const open = location.hash === "#liste";
@@ -48,11 +49,14 @@ export function initListview({ el, state, bus, projects, profile }) {
     el.hidden = !open;
     document.body.classList.toggle("list-open", open);
     BEHIND.forEach((id) => document.getElementById(id)?.toggleAttribute("inert", open));
+    state.listOpen = open;
+    bus.emit("list:toggle", open);
     if (open) { lastFocus = document.activeElement; el.scrollTop = 0; el.querySelector("#lvTitle").focus(); }
     else lastFocus?.focus?.({ preventScroll: true });
   }
   function open() { openedInApp = true; location.hash = "liste"; }
   function close() {
+    if (no3d) return; // 3D sahne yokken dönülecek oda yok
     if (openedInApp) { openedInApp = false; history.back(); }
     else { history.replaceState(null, "", location.pathname + location.search); sync(); }
   }
@@ -64,5 +68,11 @@ export function initListview({ el, state, bus, projects, profile }) {
   bus.on("lang:change", render);
   render();
   sync();
-  return { open, close };
+  /* 3D yoksa / bağlam kaybolunca: notla açılır ve açık kalır */
+  function setNo3d(on) {
+    no3d = on;
+    render();
+    if (location.hash !== "#liste") location.hash = "liste"; else { el.hidden = true; sync(); }
+  }
+  return { open, close, setNo3d };
 }

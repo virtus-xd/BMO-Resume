@@ -33,3 +33,14 @@ describe("applyI18n", () => {
     expect(document.querySelector("button").getAttribute("aria-label")).toBe(STRINGS.en.sound_aria);
   });
 });
+
+describe("sayfa başlığı ve 3D yok notu", () => {
+  it("doc_title dile göre", () => {
+    expect(t("tr", "doc_title")).toBe("Erdem — Portfolyo");
+    expect(t("en", "doc_title")).toBe("Erdem — Portfolio");
+  });
+  it("no3d notu iki dilde", () => {
+    expect(t("tr", "no3d")).toBe("Tarayıcın 3D sahneyi desteklemiyor; projeler burada.");
+    expect(t("en", "no3d")).toBe("Your browser doesn't support the 3D scene; here are the projects.");
+  });
+});

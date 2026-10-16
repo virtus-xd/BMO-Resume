@@ -25,4 +25,12 @@ describe("renderList", () => {
     expect(html).not.toContain('href=""');
     expect(html).toContain("Cartoon Network");
   });
+  it("3D yoksa başta not çıkar ve odaya dönüş düğmesi gizlenir", () => {
+    const html = renderList(PROJECTS, EMPTY, "tr", { no3d: true });
+    document.body.innerHTML = html;
+    expect(document.querySelector(".lv-no3d").textContent).toContain("3D sahneyi desteklemiyor");
+    expect(document.querySelector("[data-act=close]")).toBeNull();
+    expect(renderList(PROJECTS, EMPTY, "tr")).not.toContain("lv-no3d");
+  });
 });
+

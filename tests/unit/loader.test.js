@@ -3,20 +3,34 @@ import { runLoader } from "../../src/ui/loader.js";
 
 describe("runLoader", () => {
   afterEach(() => vi.useRealTimers());
-  it("hazır sinyali hiç gelmezse süre dolunca yine kapanır", async () => {
-    vi.useFakeTimers();
+  const setup = () => {
     document.body.innerHTML = `<div id="l"><b id="b"></b></div>`;
-    const el = document.getElementById("l");
-    const p = runLoader({ el, barEl: document.getElementById("b"), timeout: 2500, ready: new Promise(() => {}) });
-    await vi.advanceTimersByTimeAsync(2500 + 500);
+    return { el: document.getElementById("l"), barEl: document.getElementById("b") };
+  };
+  it("beklenenlerden biri hiç çözülmese bile süre dolunca kapanır", async () => {
+    vi.useFakeTimers();
+    const { el, barEl } = setup();
+    let done = false;
+    const p = runLoader({ el, barEl, timeout: 2500, waits: [Promise.resolve(), new Promise(() => {})] }).then(() => { done = true; });
+    await vi.advanceTimersByTimeAsync(2400);
+    expect(el.classList.contains("out")).toBe(false);
+    await vi.advanceTimersByTimeAsync(100 + 500);
+    await p;
+    expect(done).toBe(true);
+    expect(el.hidden).toBe(true);
+  });
+  it("hepsi çözülünce beklemeden kapanır", async () => {
+    vi.useFakeTimers();
+    const { el, barEl } = setup();
+    const p = runLoader({ el, barEl, timeout: 2500, waits: [Promise.resolve(), Promise.resolve(1)] });
+    await vi.advanceTimersByTimeAsync(500);
     await p;
     expect(el.hidden).toBe(true);
   });
-  it("hazır sinyali gelince beklemeden kapanır", async () => {
+  it("reddedilen bekleme yükleme ekranını takılı bırakmaz", async () => {
     vi.useFakeTimers();
-    document.body.innerHTML = `<div id="l"><b id="b"></b></div>`;
-    const el = document.getElementById("l");
-    const p = runLoader({ el, barEl: document.getElementById("b"), timeout: 2500, ready: Promise.resolve() });
+    const { el, barEl } = setup();
+    const p = runLoader({ el, barEl, timeout: 2500, waits: [Promise.reject(new Error("x"))] });
     await vi.advanceTimersByTimeAsync(500);
     await p;
     expect(el.hidden).toBe(true);

@@ -3,6 +3,7 @@
 .lv-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .lv-head h2 { margin: 0; font-family: var(--f-hand); font-weight: 400; font-size: 40px; outline: none; }
 .lv-close { min-height: 44px; padding: 0 14px; font: 700 15px var(--f-body); color: var(--ink); background: #fff; border: 3px solid var(--ink); border-radius: 10px; cursor: pointer; }
+.lv-no3d { margin: 16px 0 0; padding: 10px 14px; border: 3px solid var(--ink); border-radius: 10px; background: #fff3c4; font-weight: 700; }
 .lv-about { font-size: 17px; line-height: 1.6; max-width: 68ch; }
 .lv-cv { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 3px solid var(--ink); border-radius: 10px; background: var(--bmo); color: var(--ink); font-weight: 800; text-decoration: none; box-shadow: 0 4px 0 rgba(30, 10, 2, .35); }
 .listview h3 { margin: 32px 0 12px; font-family: var(--f-hand); font-weight: 400; font-size: 28px; }

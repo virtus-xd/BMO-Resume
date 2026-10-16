@@ -23,6 +23,7 @@ export const state = {
   slice: "noon",
   narrow: false,
   zoomed: false,
+  listOpen: false, // Liste görünümü açıkken sahne durur
 };
 
 /* gizli modda / engelli depolamada sessizce varsayılana düşer */
