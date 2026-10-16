@@ -19,6 +19,7 @@ import { PROJECTS, assignSlots } from "./data/projects.js";
 import { SLOTS } from "./scene/room.svg.js";
 import { createTapes, placeTapes, bindDrag } from "./tapes/tape.js";
 import { insertTape, ejectTape, missTape } from "./tapes/choreo.js";
+import { createScreen } from "./ui/screen.js";
 
 const $ = (s) => document.querySelector(s);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -35,7 +36,7 @@ $("#l2").innerHTML = `<div class="tapes" id="tapes"></div><div class="bmo" id="b
 $("#l3").innerHTML = FRONT_SVG;
 
 const view = initStage($("#stage"), { onLayout: (v) => { state.narrow = v.narrow; } });
-if (!reduced) initParallax([...document.querySelectorAll(".layer")], state);
+const parallax = reduced ? null : initParallax([...document.querySelectorAll(".layer")], state);
 
 const faceEl = $("#bmo-face");
 const face = createFace(faceEl);
@@ -83,16 +84,25 @@ const handlers = {
 placed.forEach(({ project }) => bindDrag(tapes[project.id], project, handlers));
 document.addEventListener("tape:pick", () => bus.emit("sfx", "pick"));
 
+/* --- BMO ekranı --- */
+const screen = createScreen({ cameraEl: $("#camera"), uiEl: $("#screenUi"), backdropEl: $("#screenBackdrop"), view, state, bus, reduced, parallax, projects: PROJECTS });
+addEventListener("resize", () => screen.relayout());
+
 /* --- akış: busy kilidi yalnızca burada --- */
 const choreo = { tapes, bus, state, reduced, stageEl: $("#l2") };
 
 async function play(p, ghost) {
-  if (state.busy) { ghost?.remove(); return; }
-  if (state.current?.id === p.id) { ghost?.remove(); tapes[p.id].classList.add("gone"); return; }
+  if (state.busy) {
+    ghost?.remove();
+    if (state.current?.id !== p.id) tapes[p.id].classList.remove("gone");
+    return;
+  }
   state.busy = true;
   try {
-    if (state.current) await ejectTape(state.current, choreo, { quick: true });
+    if (state.current?.id === p.id) { ghost?.remove(); tapes[p.id].classList.add("gone"); await screen.open(p); return; }
+    if (state.current) { await screen.close(); await ejectTape(state.current, choreo, { quick: true }); }
     await insertTape(p, ghost, choreo);
+    await screen.open(p);
   } finally { state.busy = false; }
 }
 
@@ -101,19 +111,18 @@ async function eject() {
   state.busy = true;
   try {
     const p = state.current;
+    await screen.close();
     await ejectTape(p, choreo);
     bus.emit("say", t(state.lang, "ejected"));
     tapes[p.id].focus({ preventScroll: true });
   } finally { state.busy = false; }
 }
+bus.on("screen:closed", eject);
 
 function miss(p, ghost) { missTape(p, ghost, choreo); }
 
 bus.on("tape:loaded", (p) => sfx.startLoop(p.id));
 bus.on("tape:ejected", () => sfx.stopLoop());
-
-/* Görev 10'da BMO ekranındaki ⏏ düğmesiyle değişecek geçici çıkarma kısayolu */
-addEventListener("keydown", (e) => { if (e.key === "Escape") eject(); });
 
 bus.emit("say", t(state.lang, "welcome"));
 

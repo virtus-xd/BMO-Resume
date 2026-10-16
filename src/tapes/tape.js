@@ -51,7 +51,7 @@ export function makeGhost(tapeEl) {
   const r = tapeEl.querySelector(".cas").getBoundingClientRect();
   if (wasGone) tapeEl.classList.add("gone");
   const g = tapeEl.cloneNode(true);
-  g.className = "tape ghost"; g.removeAttribute("aria-label"); g.setAttribute("aria-hidden", "true");
+  g.className = "tape ghost"; g.removeAttribute("aria-label"); g.removeAttribute("data-id"); g.setAttribute("aria-hidden", "true");
   g._home = { x: r.left, y: r.top, fs: r.width / 7 };
   g.style.fontSize = g._home.fs + "px";
   document.body.appendChild(g);
