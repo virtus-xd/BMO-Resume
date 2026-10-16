@@ -1,0 +1,90 @@
+[
+  {
+    "id": "hakkimda", "status": "live",
+    "color": { "shell": "#efe2c4", "label": "#d9774a" },
+    "title": { "tr": "Hakkımda", "en": "About Me" },
+    "kind": { "tr": "Tanışma", "en": "Introduction" },
+    "desc": {
+      "tr": "Mersin Üniversitesi Bilgisayar Mühendisliği 2. sınıf öğrencisiyim. Güçlü bir web geliştirme altyapım var; fikirleri ürüne dönüştürüp yayına almayı seviyorum. Web, mobil oyun ve donanım projeleri arasında geziyorum.",
+      "en": "I'm a second-year Computer Engineering student at Mersin University. I have a strong web development background and love turning ideas into shipped products. I move between web, mobile games and hardware projects."
+    },
+    "line": { "tr": "Bu kaset sahibimi anlatıyor. Erdem ile tanış!", "en": "This tape is all about my owner. Meet Erdem!" },
+    "stack": ["Web", "Unity", "Mobil", "IoT"], "shots": [],
+    "links": [{ "label": "GitHub", "url": "" }, { "label": "LinkedIn", "url": "" }]
+  },
+  {
+    "id": "okey", "status": "dev",
+    "color": { "shell": "#4a3a36", "label": "#e2b04a" },
+    "title": { "tr": "81 Okey", "en": "81 Okey" },
+    "kind": { "tr": "Mobil Oyun", "en": "Mobile Game" },
+    "desc": {
+      "tr": "Web tabanlı Türk okey oyunu 81 Okey'in Unity ile mobil uygulamaya dönüştürülmesi. Oyun mantığı, çok oyunculu akış ve mobil arayüz yeniden kuruluyor.",
+      "en": "Porting the web-based Turkish okey game 81 Okey to a mobile app with Unity. Game logic, multiplayer flow and the mobile UI are being rebuilt."
+    },
+    "line": { "tr": "Taşlar dizildi, 81 Okey çalıyor. Masaya otur bakalım!", "en": "Tiles are set, 81 Okey is playing. Pull up a chair!" },
+    "stack": ["Unity", "C#", "Web → Mobil"], "shots": [],
+    "links": [{ "label": "alazgame.com", "url": "https://alazgame.com" }]
+  },
+  {
+    "id": "tbh", "status": "live",
+    "color": { "shell": "#3d5560", "label": "#6f98b8" },
+    "title": { "tr": "TBH Trade", "en": "TBH Trade" },
+    "kind": { "tr": "Web Aracı", "en": "Web Tool" },
+    "desc": {
+      "tr": "TBH: Task Bar Hero oyunu için Steam pazarında kârlılık hesaplayan araç. Eşya fiyatlarını karşılaştırıp hangi işlemin kazandırdığını gösteriyor.",
+      "en": "A profit calculator for the Steam market of the game TBH: Task Bar Hero. It compares item prices and shows which trades pay off."
+    },
+    "line": { "tr": "TBH Trade yüklendi. Steam pazarında kâr peşindeyiz!", "en": "TBH Trade loaded. We're hunting profit on the Steam market!" },
+    "stack": ["JavaScript", "Steam Market", "Hesaplama"], "shots": [],
+    "links": [{ "label": "Canlı Demo", "url": "" }]
+  },
+  {
+    "id": "davetiye", "status": "live",
+    "color": { "shell": "#efe2c4", "label": "#c97a9a" },
+    "title": { "tr": "Sanal Davetiyecim", "en": "Sanal Davetiyecim" },
+    "kind": { "tr": "Girişim", "en": "Startup" },
+    "desc": {
+      "tr": "Dijital davetiye hizmeti. Düğün, nişan ve etkinlikler için paylaşılabilir davetiye sayfaları; marka kimliği ve pazarlama çalışmaları dahil.",
+      "en": "A digital invitation service: shareable invitation pages for weddings, engagements and events, including brand identity and marketing work."
+    },
+    "line": { "tr": "Sanal Davetiyecim çalıyor. Davetlisiniz efendim!", "en": "Sanal Davetiyecim is playing. You're invited!" },
+    "stack": ["Web", "Marka", "Pazarlama"], "shots": [],
+    "links": [{ "label": "sanaldavetiyecim.com", "url": "https://sanaldavetiyecim.com" }]
+  },
+  {
+    "id": "radar", "status": "design",
+    "color": { "shell": "#4a3a36", "label": "#8fae5a" },
+    "title": { "tr": "Radar Mayın", "en": "Radar Mines" },
+    "kind": { "tr": "Mobil Bulmaca", "en": "Mobile Puzzle" },
+    "desc": {
+      "tr": "Mayın tarlasının gemili versiyonu: hareket eden radar penceresi ve yakıt sistemiyle her hamle bir karar. Tasarım ve planlama aşamasında.",
+      "en": "Minesweeper with a ship: a moving radar window and a fuel system make every move a decision. In design and planning."
+    },
+    "line": { "tr": "Radar açık, yakıt sınırlı. Mayınlara dikkat kaptan!", "en": "Radar on, fuel low. Watch out for mines, captain!" },
+    "stack": ["Oyun Tasarımı", "Mobil"], "shots": [], "links": []
+  },
+  {
+    "id": "esp32", "status": "dev",
+    "color": { "shell": "#5b3f5e", "label": "#b48cc4" },
+    "title": { "tr": "ESP32 İstasyon", "en": "ESP32 Station" },
+    "kind": { "tr": "IoT · Ders Projesi", "en": "IoT · Course Project" },
+    "desc": {
+      "tr": "Kablosuz ve Mobil Ağlar dersi için ESP32 tabanlı hava istasyonu ve uzaktan alarm sistemi. Sensör verisi kablosuz olarak toplanıp izleniyor.",
+      "en": "An ESP32-based weather station and remote alarm system for the Wireless and Mobile Networks course. Sensor data is collected and monitored over Wi-Fi."
+    },
+    "line": { "tr": "Sensörler okunuyor... bugün hava kodlamaya müsait.", "en": "Reading sensors... perfect weather for coding today." },
+    "stack": ["ESP32", "C++", "Sensörler", "Wi-Fi"], "shots": [], "links": []
+  },
+  {
+    "id": "jarvis", "status": "planning",
+    "color": { "shell": "#3f5a48", "label": "#4e9c8f" },
+    "title": { "tr": "JARVIS", "en": "JARVIS" },
+    "kind": { "tr": "Sesli Asistan", "en": "Voice Assistant" },
+    "desc": {
+      "tr": "Kendi sesli kişisel asistanım: komutları dinleyen, işleri otomatikleştiren bir yardımcı. Hedefler ve platform kararları netleşiyor.",
+      "en": "My own voice assistant: a helper that listens to commands and automates tasks. Goals and platform decisions are taking shape."
+    },
+    "line": { "tr": "Sesli asistan kaseti. Belki bir gün ben de onun gibi konuşurum!", "en": "A voice assistant tape. Maybe one day I'll talk like that too!" },
+    "stack": ["Ses Tanıma", "Otomasyon"], "shots": [], "links": []
+  }
+]
