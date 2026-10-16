@@ -35,6 +35,9 @@ export function renderList(projects, profile, lang) {
   </div>`;
 }
 
+/* liste açıkken arkadaki her şey etkileşimsiz: odak ve tıklama listeden kaçmasın */
+const BEHIND = ["topbar", "room", "tray", "screenUi", "screenBackdrop", "fanart"];
+
 export function initListview({ el, state, bus, projects, profile }) {
   let openedInApp = false, lastFocus = null;
   const render = () => { el.innerHTML = renderList(projects, profile, state.lang); };
@@ -44,6 +47,7 @@ export function initListview({ el, state, bus, projects, profile }) {
     if (open === !el.hidden) return;
     el.hidden = !open;
     document.body.classList.toggle("list-open", open);
+    BEHIND.forEach((id) => document.getElementById(id)?.toggleAttribute("inert", open));
     if (open) { lastFocus = document.activeElement; el.scrollTop = 0; el.querySelector("#lvTitle").focus(); }
     else lastFocus?.focus?.({ preventScroll: true });
   }

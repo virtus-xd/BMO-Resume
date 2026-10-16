@@ -25,6 +25,9 @@ describe("room", () => {
     expect(SLOTS).toHaveLength(10);
     SLOTS.forEach((s) => { expect(s.x).toBeGreaterThanOrEqual(240 + 70); expect(s.x).toBeLessThanOrEqual(1680 - 70); });
   });
+  it("yuvalar dikeyde de güvenli: ~2.1:1 ekranda kırpılmayan bant içinde (y ≤ 980)", () => {
+    SLOTS.forEach((s) => expect(s.y).toBeLessThanOrEqual(980));
+  });
   it("her Finn/Jake nesnesi tıklanabilir grup olarak var", () => {
     OBJECTS.forEach((o) => expect(ROOM_SVG).toContain(`data-obj="${o}" role="button"`));
   });

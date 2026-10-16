@@ -1,6 +1,6 @@
 html, body { height: 100%; margin: 0; }
 body { background: var(--floor-dk); color: var(--paper); font-family: var(--f-body); overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; transition: background-color .6s; }
-.room { position: fixed; inset: 0; overflow: hidden; }
+.room { position: fixed; inset: 0; overflow: clip; } /* clip: odak da kaydıramaz (hidden kaydırılabilir) */
 .stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; }
 .camera { position: absolute; inset: 0; transform-origin: 0 0; }
 .layer { position: absolute; inset: 0; }

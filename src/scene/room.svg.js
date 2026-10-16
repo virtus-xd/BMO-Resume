@@ -175,11 +175,12 @@ export const SLOTS = [
   { x: 1460, y: 470, s: 0.9, r: 4 },    // raf
   { x: 410, y: 752, s: 0.95, r: -5 },   // kanepe
   { x: 640, y: 752, s: 0.95, r: 4 },    // kanepe
-  { x: 520, y: 1000, s: 1.1, r: -4 },   // halı sol
-  { x: 720, y: 1045, s: 1.15, r: 3 },   // halı ön
-  { x: 1230, y: 1040, s: 1.15, r: -3 }, // halı sağ
-  { x: 1350, y: 965, s: 1.05, r: 5 },   // zemin sağ
-  { x: 330, y: 965, s: 1.05, r: -6 },   // zemin sol
+  /* zemin yuvaları y ≤ 980: 16:9'dan geniş ekranlarda cover ölçekleme alt kenarı kırpar */
+  { x: 520, y: 960, s: 1.1, r: -4 },    // halı sol
+  { x: 700, y: 975, s: 1.15, r: 3 },    // halı ön
+  { x: 1240, y: 975, s: 1.15, r: -3 },  // halı sağ
+  { x: 1370, y: 940, s: 1.05, r: 5 },   // zemin sağ
+  { x: 330, y: 950, s: 1.05, r: -6 },   // zemin sol
   { x: 1200, y: 890, s: 1.0, r: 2 },    // BMO'nun yanı
 ];
 

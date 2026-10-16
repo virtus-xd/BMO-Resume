@@ -31,7 +31,7 @@ export function renderScreen(p, lang, index, total) {
 }
 
 export function createScreen({ cameraEl, uiEl, backdropEl, view, state, bus, reduced, parallax, projects }) {
-  let shown = null;
+  let shown = null, zoomTween = null;
   const target = () => cameraFor(SCREEN_RECT, innerWidth, innerHeight, view.k, view.narrow ? 0.94 : 0.8, view.oy);
 
   function placeUi() {
@@ -50,7 +50,10 @@ export function createScreen({ cameraEl, uiEl, backdropEl, view, state, bus, red
     if (reduced) uiEl.classList.add("panel");
     else {
       document.body.classList.add("zoomed");
-      await gsap.to(cameraEl, { ...target(), duration: 0.7, ease: "power2.inOut" });
+      zoomTween = gsap.to(cameraEl, { ...target(), duration: 0.7, ease: "power2.inOut" });
+      await zoomTween;
+      zoomTween = null;
+      gsap.set(cameraEl, target()); // tween sırasında boyut değiştiyse güncel hedefe otur
       placeUi();
     }
     uiEl.hidden = false;
@@ -67,7 +70,7 @@ export function createScreen({ cameraEl, uiEl, backdropEl, view, state, bus, red
   }
 
   function relayout() {
-    if (!state.zoomed || reduced) return;
+    if (!state.zoomed || reduced || zoomTween) return; // zoom sürüyorsa open() bitince hizalar
     gsap.set(cameraEl, target());
     placeUi();
   }
@@ -81,7 +84,7 @@ export function createScreen({ cameraEl, uiEl, backdropEl, view, state, bus, red
   uiEl.addEventListener("click", (e) => { if (e.target.closest("[data-act=eject]")) bus.emit("screen:closed"); });
   backdropEl.addEventListener("click", () => bus.emit("screen:closed"));
   addEventListener("keydown", (e) => {
-    if (uiEl.hidden) return;
+    if (uiEl.hidden || uiEl.inert) return; // liste görünümü üstteyken ekran klavyeyi almaz
     if (e.key === "Escape") { e.preventDefault(); bus.emit("screen:closed"); return; }
     if (e.key !== "Tab") return;
     const f = [...uiEl.querySelectorAll("a, button, [tabindex='0']")];
