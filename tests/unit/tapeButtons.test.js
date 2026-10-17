@@ -129,6 +129,28 @@ describe("bindDrag", () => {
     expect(h.onPick).not.toHaveBeenCalled();
     expect(h.onTap).not.toHaveBeenCalled();
   });
+  /* parmak telefonda yavaş başlar: olaylar 1–4 px arayla gelir */
+  const swipe = (steps) => { let x = 100, y = 100; ev("pointerdown", x, y); for (const [dx, dy] of steps) { x += dx; y += dy; ev("pointermove", x, y); } };
+  const inTray = () => { document.body.innerHTML = `<div class="tray"><button id="t"></button></div>`; el = document.getElementById("t"); bindDrag(el, "a", h); };
+  it("rafta yana kaydırmak (yavaş başlasa da) kaseti kaldırmaz, ıskalama da sayılmaz", () => {
+    inTray();
+    for (const step of [1, 2, 4]) {
+      swipe(Array.from({ length: 30 }, () => [-step, 0])); ev("pointercancel", 0, 100);
+      swipe(Array.from({ length: 30 }, (_, i) => [step, i < 4 ? -1 : 0])); ev("pointercancel", 0, 100); // başparmak hafif yukarı kayar
+    }
+    expect(h.onPick).not.toHaveBeenCalled();
+    expect(h.onCancel).not.toHaveBeenCalled();
+  });
+  it("rafta yukarı çekmek kaseti kaldırır", () => {
+    inTray();
+    swipe(Array.from({ length: 10 }, () => [1, -3])); ev("pointerup", 110, 70);
+    expect(h.onPick).toHaveBeenCalled();
+    expect(h.onDrop).toHaveBeenCalled();
+  });
+  it("odada (raf dışında) yana sürüklemek kaseti kaldırır", () => {
+    swipe(Array.from({ length: 10 }, () => [-2, 0]));
+    expect(h.onPick).toHaveBeenCalled();
+  });
   it("klavye tıklaması (detail 0) dokunma sayılır", () => {
     el.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 }));
     expect(h.onTap).toHaveBeenCalledWith("a");

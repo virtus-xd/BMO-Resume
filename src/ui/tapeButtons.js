@@ -62,7 +62,9 @@ export function createTapeButtons({ host, trayHost, projects, lang, rectOf, narr
 }
 
 /* Sürükleme: kıpırdamadan bırakmak dokunma (hızlı oynat); 7 px'ten fazla sürüklemek kaseti kaldırır.
+   Raftaki kaset yalnız yukarı çekilince kalkar: yön 12 px'te belli olur, yana hareket rafın kaydırmasıdır.
    onDrag yakınlığı döndürür (BMO'nun yuvasına yakın mı); pointercancel / lostpointercapture ıskalamadır. */
+const PICK = 7, TRAY_PICK = 12;
 export function bindDrag(el, id, { isBusy, onTap, onPick, onDrag, onDrop, onCancel, onReach }) {
   let active = false, dragging = false, near = false, sx = 0, sy = 0, lastX = 0, lastT = 0, pid = 0;
 
@@ -83,9 +85,10 @@ export function bindDrag(el, id, { isBusy, onTap, onPick, onDrag, onDrop, onCanc
     if (!active) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     if (!dragging) {
-      /* raftaki yatay kaydırmayı engelleme */
-      if (el.closest(".tray") && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) { finish(); return; }
-      if (Math.hypot(dx, dy) < 7) return;
+      const tray = !!el.closest(".tray");
+      if (Math.hypot(dx, dy) < (tray ? TRAY_PICK : PICK)) return;
+      /* rafta yana (ya da aşağı) hareket kaydırmadır: kaseti bırak, tarayıcı rafı kaydırsın */
+      if (tray && -dy <= Math.abs(dx)) { finish(); return; }
       dragging = true;
       onPick(id, e.clientX, e.clientY);
     }
