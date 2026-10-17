@@ -75,7 +75,7 @@ test("klavye: Enter ile tak, odak ekranda; Esc kapatır, odak BMO'da, Enter yeni
 test("#liste ile hızlı görünüm doğrudan açılır, Esc ile kapanır", async ({ page }) => {
   await ready(page, "/?t=noon#liste");
   await expect(page.locator("#listview")).toBeVisible();
-  await expect(page.locator(".lv-card")).toHaveCount(6);
+  await expect(page.locator(".lv-card")).toHaveCount(8);
   await expect(page.locator(".lv-about")).toContainText("Mersin");
   await page.keyboard.press("Escape");
   await expect(page.locator("#listview")).toBeHidden();

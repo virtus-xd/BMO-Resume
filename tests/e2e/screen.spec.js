@@ -133,7 +133,7 @@ test("proje açıkken dar düzene geçip kapatınca kasetler rafa yerleşir (dö
   await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
   await page.keyboard.press("Escape");
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(page.locator("#tray .tape")).toHaveCount(7);
+  await expect(page.locator("#tray .tape")).toHaveCount(9);
   await expect(page.locator('#tray .tape[data-id="tbh"]')).toBeVisible();
 });
 
@@ -146,6 +146,6 @@ test("hareketi azalt: dar düzende açıp genişe geçince kapatınca kaset dü�
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.keyboard.press("Escape");
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(page.locator("#tapeBtns .tape")).toHaveCount(7);
+  await expect(page.locator("#tapeBtns .tape")).toHaveCount(9);
   await expect(page.locator('#tapeBtns .tape[data-id="tbh"]')).toBeVisible();
 });

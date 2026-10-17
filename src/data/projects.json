@@ -56,6 +56,32 @@
     "links": [{ "label": "sanaldavetiyecim.com", "url": "https://sanaldavetiyecim.com" }]
   },
   {
+    "id": "oxxo", "status": "live",
+    "color": { "shell": "#34373b", "label": "#e8963a" },
+    "title": { "tr": "OXXO Mimarlık", "en": "OXXO Architecture" },
+    "kind": { "tr": "Kurumsal Web Sitesi", "en": "Company Website" },
+    "desc": {
+      "tr": "Konya'daki mimarlık stüdyosu OXXO'nun web sitesi. Kategori, durum ve yıla göre filtrelenen proje portfolyosu, stüdyo tanıtımı, sürdürülebilirlik bölümü ve iletişim formu.",
+      "en": "Website for OXXO, an architecture studio in Konya: a project portfolio filtered by category, status and year, a studio introduction, a sustainability section and a contact form."
+    },
+    "line": { "tr": "OXXO Mimarlık çalıyor. Bu ağaç evi de onlar mı çizdi acaba?", "en": "OXXO Architecture is playing. Did they design this tree house too?" },
+    "stack": ["React", "Vite", "Tailwind"], "shots": [],
+    "links": [{ "label": "oxxomimarlik.com", "url": "https://oxxomimarlik.com" }]
+  },
+  {
+    "id": "stok", "status": "live",
+    "color": { "shell": "#e6eaf2", "label": "#4f63e0" },
+    "title": { "tr": "Stoğu Kovala", "en": "Stoğu Kovala" },
+    "kind": { "tr": "Fiyat ve Stok Takibi", "en": "Price & Stock Tracker" },
+    "desc": {
+      "tr": "Ürün linkini panele yapıştırıyorsun, gerisini o hallediyor: Trendyol, Amazon, Hepsiburada, Boyner, Zara ve Bershka'daki fiyatı ve stoğu otomatik takip ediyor; fiyat düşünce ya da ürün stoğa girince haber veriyor. Fiyat geçmişi grafikleriyle.",
+      "en": "Paste a product link into the dashboard and it does the rest: it automatically tracks price and stock on Trendyol, Amazon, Hepsiburada, Boyner, Zara and Bershka, and alerts you when the price drops or the item is back in stock. Price history charts included."
+    },
+    "line": { "tr": "Stoğu Kovala takıldı. Burnuma indirim kokusu geliyor!", "en": "Stoğu Kovala loaded. I smell a discount!" },
+    "stack": ["Next.js", "Tailwind", "Otomatik Takip"], "shots": [],
+    "links": [{ "label": "stogukovala.com", "url": "https://stogukovala.com" }]
+  },
+  {
     "id": "radar", "status": "design",
     "color": { "shell": "#4a3a36", "label": "#8fae5a" },
     "title": { "tr": "Radar Mayın", "en": "Radar Mines" },

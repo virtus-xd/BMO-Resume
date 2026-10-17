@@ -5,10 +5,10 @@ import { PROJECTS } from "../../src/data/projects.js";
 const EMPTY = { name: "Erdem", email: "", github: "", linkedin: "", cv: { tr: "", en: "" } };
 
 describe("renderList", () => {
-  it("Hakkımda metnini tanıtım olarak, diğer 6 projeyi kart olarak gösterir", () => {
+  it("Hakkımda metnini tanıtım olarak, diğer 8 projeyi kart olarak gösterir", () => {
     document.body.innerHTML = renderList(PROJECTS, EMPTY, "tr");
     expect(document.querySelector(".lv-about").textContent).toContain("Mersin Üniversitesi");
-    expect(document.querySelectorAll(".lv-card")).toHaveLength(6);
+    expect(document.querySelectorAll(".lv-card")).toHaveLength(8);
   });
   it("CV ve iletişim bilgisi yoksa o bölümler çıkmaz", () => {
     const html = renderList(PROJECTS, EMPTY, "tr");

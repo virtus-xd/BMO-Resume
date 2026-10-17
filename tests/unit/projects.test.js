@@ -2,9 +2,14 @@ import { describe, it, expect } from "vitest";
 import { PROJECTS, validateProjects, usableLinks, assignSlots } from "../../src/data/projects.js";
 
 describe("PROJECTS", () => {
-  it("7 proje içerir ve hepsi geçerli", () => {
-    expect(PROJECTS).toHaveLength(7);
+  it("9 proje içerir ve hepsi geçerli", () => {
+    expect(PROJECTS).toHaveLength(9);
     expect(validateProjects(PROJECTS)).toEqual([]);
+  });
+  it("OXXO Mimarlık ve Stoğu Kovala canlı siteleriyle listede", () => {
+    const link = (id) => usableLinks(PROJECTS.find((p) => p.id === id) ?? {}).map((l) => l.url);
+    expect(link("oxxo")).toEqual(["https://oxxomimarlik.com"]);
+    expect(link("stok")).toEqual(["https://stogukovala.com"]);
   });
   it("id'ler benzersiz", () => {
     expect(new Set(PROJECTS.map((p) => p.id)).size).toBe(PROJECTS.length);

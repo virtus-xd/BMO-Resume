@@ -5,12 +5,15 @@ import { W, H } from "../scene/stage.js";
    Dünya: y yukarı, zemin y=0, kamera +z tarafından bakar. */
 export const CAMERA = { fov: 30, position: [0, 3.0, 7.6], target: [0, 0.55, 0] };
 export const BMO = { position: [0, 0, 1.15], rotY: 0.3, scale: 0.7 };
-/* bg2'deki zemin boşlukları (stage px → zemin): sol arka, sol, sol ön, ön sol, ön sağ, sağ, sağ arka */
+/* bg2'deki zemin boşlukları (stage px → zemin), proje sırasıyla: sol arka, sol, sol ön, ön sol,
+   BMO'nun sağ arkası (kanepe önü), en sol, ön sağ, sağ, sağ arka */
 export const TAPE_SLOTS = [
   { position: [-0.77, 0, 0.44], rotY: 0.3 },
   { position: [-1.36, 0, 1.04], rotY: 0.35 },
   { position: [-1.75, 0, 1.96], rotY: 0.25 },
   { position: [-0.82, 0, 2.12], rotY: 0.1 },
+  { position: [0.7, 0, 0.25], rotY: -0.3 },
+  { position: [-2.2, 0, 0.85], rotY: 0.4 },
   { position: [0.84, 0, 2.12], rotY: -0.12 },
   { position: [1.67, 0, 1.58], rotY: -0.3 },
   { position: [1.09, 0, 1.02], rotY: -0.25 },

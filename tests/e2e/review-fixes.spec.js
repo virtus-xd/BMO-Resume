@@ -47,7 +47,7 @@ for (const [w, h] of [[1920, 937], [1366, 657]]) {
     await page.setViewportSize({ width: w, height: h });
     await ready(page);
     const boxes = await page.locator("#tapeBtns .tape").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [r.top, r.bottom, r.left, r.right]; }));
-    expect(boxes.length).toBe(7);
+    expect(boxes.length).toBe(9);
     for (const [top, bottom, left, right] of boxes) {
       expect(top).toBeGreaterThanOrEqual(0);
       expect(bottom).toBeLessThanOrEqual(h);

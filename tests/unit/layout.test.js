@@ -3,6 +3,7 @@ import { Vector3, PerspectiveCamera } from "three";
 import {
   CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, makeCamera, projectToStage, projectRect, inSafeBand, zoomPose, wrapTitle,
 } from "../../src/three/layout.js";
+import { PROJECTS } from "../../src/data/projects.js";
 
 describe("wrapTitle", () => {
   it("kelimeden böler", () => expect(wrapTitle("Sanal Davetiyecim", 10)).toEqual(["Sanal", "Davetiyecim"]));
@@ -78,8 +79,11 @@ describe("yerleşim sabitleri", () => {
     [-hx, 0, -hz], [hx, 0, -hz], [hx, 0, hz], [-hx, 0, hz], [-hx, h, -hz], [hx, h, -hz], [hx, h, hz], [-hx, h, hz],
   ].map(([dx, dy, dz]) => new Vector3(x + dx, y + dy, z + dz));
 
-  it("7 kaset yuvası zeminde ve BMO'ya 0.95–2.4 birim uzaklıkta", () => {
-    expect(TAPE_SLOTS).toHaveLength(7);
+  it("her proje için bir kaset yuvası var (fazla proje odada sessizce kaybolmaz)", () => {
+    expect(TAPE_SLOTS.length).toBeGreaterThanOrEqual(PROJECTS.length);
+  });
+  it("9 kaset yuvası zeminde ve BMO'ya 0.95–2.4 birim uzaklıkta", () => {
+    expect(TAPE_SLOTS).toHaveLength(9);
     const b = new Vector3(...BMO.position);
     TAPE_SLOTS.forEach((s) => {
       expect(s.position[1]).toBe(0);
