@@ -24,9 +24,10 @@
 <body>
   <div class="loader" id="loader" aria-hidden="true"><div class="loader-screen"><span>LOADING</span><i><b id="loaderBar"></b></i></div></div>
 
-  <!-- üst tabela; ayar tuşları yok (ses, gün saati, dil, liste BMO'nun tuşlarında ve açık ekranın köşesinde) -->
+  <!-- Görünür tabela ya da ayar tuşu yok: oda arayüzün kendisi (ses, gün saati, dil, liste BMO'nun tuşlarında).
+       Başlık ekran okuyucu ve arama motorları için; şerit yalnız çentik payı kadar (açık ekranın üst sınırı). -->
   <header class="topbar" id="topbar">
-    <div class="sign"><div class="plank"><h1>Erdem</h1><p data-i18n="tagline"></p></div></div>
+    <h1 class="sr-only">Erdem · <span data-i18n="tagline"></span></h1>
   </header>
 
   <main class="room" id="room">

@@ -39,7 +39,7 @@ export function renderList(projects, profile, lang, { no3d = false } = {}) {
 }
 
 /* liste açıkken arkadaki her şey etkileşimsiz: odak ve tıklama listeden kaçmasın */
-const BEHIND = ["topbar", "room", "tray", "screenUi", "screenBackdrop", "fanart"];
+const BEHIND = ["room", "tray", "screenUi", "screenBackdrop", "fanart"];
 
 export function initListview({ el, state, bus, projects, profile }) {
   let openedInApp = false, lastFocus = null, no3d = false;

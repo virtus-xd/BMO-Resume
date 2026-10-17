@@ -16,10 +16,13 @@ async function rgbAt(page, box) {
   return px;
 }
 
-test("sağ üstte ayar tuşu yok; tabela duruyor", async ({ page }) => {
+test("üstte tabela ve ayar tuşu yok; site adı ekran okuyucu için başlıkta duruyor", async ({ page }) => {
   await ready(page);
+  await expect(page.locator(".sign")).toHaveCount(0);
   await expect(page.locator("#topbar button")).toHaveCount(0);
-  await expect(page.locator("#topbar .sign")).toBeVisible();
+  const h1 = page.locator("#topbar h1");
+  await expect(h1).toContainText("Erdem");
+  expect((await h1.boundingBox()).width).toBeLessThanOrEqual(1);
 });
 
 for (const [w, h] of [[1440, 900], [390, 844]]) {

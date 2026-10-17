@@ -41,17 +41,8 @@
   .speech small { display: none; }
 }
 
-/* --- üst çubuk --- */
-.topbar { position: fixed; left: 0; right: 0; top: 0; z-index: 25; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); pointer-events: none; }
-.topbar > * { pointer-events: auto; }
-.sign { transform-origin: 50% 0; animation: sway 6s ease-in-out infinite; }
-@keyframes sway { 50% { transform: rotate(1.6deg); } }
-.plank { position: relative; background: linear-gradient(180deg, #c98c55, var(--wood) 60%, var(--wood-dk)); border: 3px solid var(--ink); border-radius: 10px; padding: 8px 18px 9px; box-shadow: 0 5px 0 rgba(30, 10, 2, .5); }
-.plank::before, .plank::after { content: ""; position: absolute; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: #4a2a16; }
-.plank::before { left: 7px; } .plank::after { right: 7px; }
-.plank h1 { margin: 0; font-family: var(--f-hand); font-weight: 400; font-size: 30px; line-height: 1; color: var(--paper); text-shadow: 0 2px 0 var(--ink); }
-.plank p { margin: 3px 0 0; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #3a2010; }
+/* --- üst şerit: görünmez, yalnız çentik payı (BMO ekranı açılınca üst sınır) --- */
+.topbar { position: fixed; left: 0; right: 0; top: 0; height: env(safe-area-inset-top, 0px); pointer-events: none; }
 
 /* --- altbilgi --- */
 .fanart { position: fixed; right: 12px; bottom: 8px; z-index: 8; margin: 0; font-size: 11px; font-weight: 700; color: var(--paper); opacity: .85; text-shadow: 0 1px 0 var(--ink); pointer-events: none; }
@@ -68,7 +59,5 @@ body.zoomed .fanart { display: none; }
 .noscript { position: fixed; inset: 0; z-index: 200; padding: 24px; background: var(--paper); color: var(--ink); }
 
 @media (max-width: 700px), (orientation: portrait) {
-  .plank { padding: 6px 12px 7px; } .plank h1 { font-size: 24px; } .plank p { font-size: 10px; }
   .fanart { display: none; }
 }
-@media (prefers-reduced-motion: reduce) { .sign { animation: none; } }
