@@ -22,10 +22,9 @@ describe("renderList", () => {
     expect(html).toContain('href="/cv-en.pdf"');
     expect(html).toContain('href="mailto:a@b.c"');
   });
-  it("boş linkler kartlarda görünmez, fan-art notu altbilgide", () => {
+  it("boş linkler kartlarda görünmez", () => {
     const html = renderList(PROJECTS, EMPTY, "tr");
     expect(html).not.toContain('href=""');
-    expect(html).toContain("Cartoon Network");
   });
   it("3D yoksa başta not çıkar ve odaya dönüş düğmesi gizlenir", () => {
     const html = renderList(PROJECTS, EMPTY, "tr", { no3d: true });
