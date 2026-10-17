@@ -6,11 +6,13 @@ import { t, loc, fmt } from "../data/i18n.js";
 export function createTapeButtons({ host, trayHost, projects, lang, rectOf, narrow, thumbOf }) {
   const isNarrow = typeof narrow === "function" ? narrow : () => narrow;
   const px = (v) => Math.round(v * 10) / 10 + "px";
+  let thumbReq = 0;
   const buttons = {};
 
   projects.forEach((p) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "tape"; b.dataset.id = p.id;
+    b.style.setProperty("--shell", p.color.shell); // küçük resim gelene kadar raftaki yer tutucunun rengi
     const img = document.createElement("img");
     img.className = "thumb"; img.alt = ""; img.draggable = false;
     const name = document.createElement("span");
@@ -24,7 +26,8 @@ export function createTapeButtons({ host, trayHost, projects, lang, rectOf, narr
       const b = buttons[p.id], title = loc(l, p.title);
       b.querySelector(".tape-name").textContent = title;
       b.setAttribute("aria-label", fmt(t(l, "tape_aria"), { t: title }));
-      b.querySelector(".thumb").removeAttribute("src"); // küçük resim etiketi içerir: yeniden üretilsin
+      const img = b.querySelector(".thumb");
+      img.removeAttribute("src"); delete img.dataset.req; // küçük resim etiketi içerir: yeniden üretilsin
     });
     layout();
   }
@@ -37,7 +40,12 @@ export function createTapeButtons({ host, trayHost, projects, lang, rectOf, narr
         if (b.parentElement !== trayHost) trayHost.appendChild(b);
         b.style.left = b.style.top = b.style.width = b.style.height = "";
         const img = b.querySelector(".thumb");
-        if (!img.getAttribute("src")) { const src = thumbOf?.(p.id); if (src) img.setAttribute("src", src); }
+        if (!img.getAttribute("src") && !img.dataset.req) {
+          /* küçük resim hemen (string) ya da boşta üretilince (Promise) gelir; eski istek geç dönerse yok sayılır */
+          const req = String(++thumbReq), src = thumbOf?.(p.id);
+          if (src?.then) { img.dataset.req = req; src.then((u) => { if (u && img.dataset.req === req) { img.setAttribute("src", u); delete img.dataset.req; } }); }
+          else if (src) img.setAttribute("src", src);
+        }
       } else {
         if (b.parentElement !== host) host.appendChild(b);
         const r = rectOf(p.id);

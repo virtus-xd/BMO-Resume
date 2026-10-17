@@ -13,6 +13,15 @@ export function stageOffsetY(vh, k, narrow) {
   return narrow ? 0.45 * vh - vh / 2 - (BMO_CENTER_Y - H / 2) * k : 0;
 }
 
+/* Stage'in ekranda kırpılmadan görünen kısmı, stage pikselinde (tam sayıya genişletilmiş kutu) */
+export function visibleStageRect(view, vw, vh, { top = 0, bottom = 0 } = {}) {
+  const sx = (px) => W / 2 + (px - vw / 2) / view.k;
+  const sy = (py) => H / 2 + (py - vh / 2 - view.oy) / view.k;
+  const x0 = Math.max(0, Math.floor(sx(0))), x1 = Math.min(W, Math.ceil(sx(vw)));
+  const y0 = Math.max(0, Math.floor(sy(top))), y1 = Math.min(H, Math.ceil(sy(vh - bottom)));
+  return { x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0) };
+}
+
 export function initStage(stageEl, { onLayout } = {}) {
   const mq = matchMedia(NARROW_QUERY);
   const view = { k: 1, oy: 0, narrow: mq.matches };

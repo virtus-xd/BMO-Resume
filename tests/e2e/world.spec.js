@@ -41,3 +41,17 @@ test("kaset düğmesine tıklamak kaseti takar ve projeyi açar", async ({ page 
   await expect(page.locator("#sTitle")).toHaveText("81 Okey", { timeout: 8000 });
   await expect(page.locator('#tapeBtns .tape[data-id="okey"]')).toHaveClass(/gone/);
 });
+
+test("dar düzende raftaki kaset küçük resimleri boş değil (3D kaset gizliyken de çizilir)", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await ready(page);
+  await expect.poll(() => page.locator("#tray .tape img[src]").count()).toBe(7);
+  const opaque = await page.locator("#tray .tape img").evaluateAll((imgs) => imgs.map((img) => {
+    const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 200) n++;
+    return n / (c.width * c.height);
+  }));
+  opaque.forEach((f) => expect(f).toBeGreaterThan(0.3));
+});

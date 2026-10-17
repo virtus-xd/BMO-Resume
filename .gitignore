@@ -6,3 +6,8 @@ dist/
 test-results/
 playwright-report/
 .superpowers/
+# kaynak görseller (WebP'ler public/bg'de, scripts/images.mjs üretir) ve ekran görüntüleri
+/bg1.png
+/bg2.jpg
+/bg2_gece.jpg
+Screenshot *.png

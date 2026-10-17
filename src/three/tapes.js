@@ -1,6 +1,6 @@
 import {
   CanvasTexture, CircleGeometry, CylinderGeometry, DirectionalLight, Group, HemisphereLight, Mesh, MeshBasicMaterial,
-  PerspectiveCamera, PlaneGeometry, Scene, SRGBColorSpace, Vector4,
+  PerspectiveCamera, PlaneGeometry, PointLight, Scene, SRGBColorSpace, Vector4,
 } from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { gsap } from "gsap";
@@ -33,13 +33,15 @@ function drawLabel(ctx, project, lines, coverImg) {
   ctx.font = "34px 'Gochi Hand', cursive"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
   ctx.fillText("A", 496, 28);
   if (!coverImg) {
-    ctx.fillStyle = "#3a2418"; ctx.textAlign = "left";
-    const size = lines.length > 1 ? 48 : 60;
+    /* Gochi Hand bu ölçekte ince kalıyor: aynı renkte hafif konturla kalınlaştırılır (uzaktan da okunsun) */
+    ctx.fillStyle = ctx.strokeStyle = "#3a2418"; ctx.textAlign = "left"; ctx.lineJoin = "round"; ctx.lineWidth = 2.5;
+    const size = lines.length > 1 ? 50 : 66;
     lines.forEach((ln, i) => {
       let s = size;
       ctx.font = `${s}px 'Gochi Hand', cursive`;
       while (ctx.measureText(ln).width > 470 && s > 24) { s -= 2; ctx.font = `${s}px 'Gochi Hand', cursive`; }
-      ctx.fillText(ln, 22, lines.length > 1 ? 79 + i * 46 : 102);
+      const y = lines.length > 1 ? 79 + i * 46 : 102;
+      ctx.strokeText(ln, 22, y); ctx.fillText(ln, 22, y);
     });
   }
   /* pencere: koyu çerçeve, kahverengi bant; makaralar mesh olarak önünde döner */
@@ -128,8 +130,11 @@ export function tapeThumbnail(renderer, tape3d, size = 160) {
   const scene = new Scene();
   scene.add(new HemisphereLight(0xf4f8ff, 0x7a5434, 1.4));
   const sun = new DirectionalLight(0xfff0d0, 1.6); sun.position.set(2, 3, 4); scene.add(sun);
+  /* ana sahneyle aynı ışık düzeni (2 nokta ışığı, sönük): shader programları yeniden derlenmesin */
+  for (let i = 0; i < 2; i++) scene.add(new PointLight(0xffa040, 0, 9, 1));
   const g = tape3d.group.clone();
   g.position.set(0, 0, 0); g.rotation.set(0, 0, 0); g.scale.setScalar(1);
+  g.visible = true; // dar düzende sahnedeki kaset gizlidir; küçük resim yine de çizilmeli
   g.getObjectByName("tapeShadow").visible = false;
   scene.add(g);
   const cam = new PerspectiveCamera(20, size / h, 0.1, 10);

@@ -47,6 +47,17 @@ describe("createTapeButtons", () => {
     expect(buttons.a.querySelector("img").getAttribute("src")).toBe("data:image/png;base64,a");
   });
 
+  it("küçük resim Promise olarak gelebilir: hazır olunca yerleşir, o ana kadar kaset renginde yer tutucu", async () => {
+    const resolvers = {};
+    const { buttons } = make(true, { thumbOf: (id) => new Promise((r) => { resolvers[id] = r; }) });
+    const img = buttons.a.querySelector("img");
+    expect(img.getAttribute("src")).toBeNull();
+    expect(buttons.a.style.getPropertyValue("--shell")).toBe("#111");
+    resolvers.a("data:image/png;base64,x");
+    await Promise.resolve();
+    expect(img.getAttribute("src")).toBe("data:image/png;base64,x");
+  });
+
   it("dar düzen bir fonksiyonla da verilebilir ve layout() düzen değişimini izler", () => {
     let narrow = false;
     const { buttons, layout } = make(() => narrow);

@@ -5,6 +5,10 @@ export function bgSources(variant) {
   return { src: `/bg/${variant}-1920.webp`, srcset: `/bg/${variant}-1920.webp 1920w, /bg/${variant}-2752.webp 2752w` };
 }
 
+/* Sahne cover ile ölçeklenir (genişlik 1920 × k). Ön yükleme tarayıcısı max() anlamadığı için medya koşullarıyla:
+   16:9'dan genişte 104vw, değilse 185vh; dar düzende (telefon) 100vw → 1920'lik görsel yeter, büyüğü indirilmez. */
+export const BG_SIZES = "(max-width: 700px) 100vw, (orientation: portrait) 100vw, (min-aspect-ratio: 16/9) 104vw, 185vh";
+
 export function bgOpacity(slice) {
   if (slice === "night") return { day: 0, night: 1 };
   if (slice === "sunset") return { day: 1, night: 0.35 };
@@ -12,20 +16,34 @@ export function bgOpacity(slice) {
 }
 
 export function initBackground({ dayEl, nightEl, state, bus, reduced, timeout = 2500 }) {
-  [[dayEl, "day"], [nightEl, "night"]].forEach(([el, v]) => {
+  /* gündüz görseli HTML'de (tarayıcı erken keşfetsin, LCP); yalnız eksikse buradan verilir.
+     Gece görseli yalnız gerekince (gece/gün batımı) iner: açılışta bant genişliğini LCP ile paylaşmasın. */
+  function load(el, v) {
+    if (el.getAttribute("src")) return;
     const s = bgSources(v);
-    el.setAttribute("sizes", "max(104vw, 185vh)"); // sahne cover ile ölçeklenir: 1920 × k
+    el.setAttribute("sizes", BG_SIZES);
     el.setAttribute("srcset", s.srcset);
     el.setAttribute("src", s.src);
-  });
+  }
+  const needsNight = (slice) => bgOpacity(slice).night > 0;
+  let nightReady = null;
+  const ensureNight = () => { load(nightEl, "night"); return (nightReady ||= Promise.resolve(nightEl.decode?.()).catch(() => {})); };
+  load(dayEl, "day");
+  if (needsNight(state.slice)) ensureNight();
 
   const o = bgOpacity(state.slice);
   gsap.set(dayEl, { opacity: o.day });
   gsap.set(nightEl, { opacity: o.night });
+  /* gece görseli o an iniyorsa çapraz geçiş çözülünce başlar; arada dilim yine değiştiyse eski istek yok sayılır */
+  let turn = 0;
   bus.on("slice:change", (slice) => {
-    const n = bgOpacity(slice);
-    gsap.to(dayEl, { opacity: n.day, duration: 0.6, ease: "sine.inOut" });
-    gsap.to(nightEl, { opacity: n.night, duration: 0.6, ease: "sine.inOut" });
+    const mine = ++turn, n = bgOpacity(slice);
+    const fade = () => {
+      if (mine !== turn) return;
+      gsap.to(dayEl, { opacity: n.day, duration: 0.6, ease: "sine.inOut" });
+      gsap.to(nightEl, { opacity: n.night, duration: 0.6, ease: "sine.inOut" });
+    };
+    if (needsNight(slice)) ensureNight().then(fade); else fade();
   });
 
   /* fareyle ±10 px kayma; dar düzende ve hareketi azalt'ta yok */
@@ -40,7 +58,9 @@ export function initBackground({ dayEl, nightEl, state, bus, reduced, timeout = 
     });
   }
 
-  const decoded = Promise.all([dayEl, nightEl].map((el) => Promise.resolve(el.decode?.()).catch(() => {})));
+  /* yalnız açılışta görünecek görsel(ler)in çözülmesi beklenir */
+  const visible = [o.day > 0 && dayEl, o.night > 0 && nightEl].filter(Boolean);
+  const decoded = Promise.all(visible.map((el) => Promise.resolve(el.decode?.()).catch(() => {})));
   const ready = Promise.race([decoded, new Promise((r) => setTimeout(r, timeout))]).then(() => {});
   return { ready };
 }

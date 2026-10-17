@@ -37,8 +37,8 @@
 
   <main class="room" id="room">
     <div class="stage" id="stage">
-      <img id="bgDay" class="bg" alt="" fetchpriority="high">
-      <img id="bgNight" class="bg" alt="">
+      <img id="bgDay" class="bg" alt="" fetchpriority="high" decoding="async" sizes="(max-width: 700px) 100vw, (orientation: portrait) 100vw, (min-aspect-ratio: 16/9) 104vw, 185vh" srcset="/bg/day-1920.webp 1920w, /bg/day-2752.webp 2752w" src="/bg/day-1920.webp">
+      <img id="bgNight" class="bg" alt="" decoding="async" fetchpriority="low">
       <canvas class="world" id="world" aria-hidden="true"></canvas>
       <canvas class="particles" id="particles" aria-hidden="true"></canvas>
       <div class="tint"></div>

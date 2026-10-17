@@ -6,7 +6,7 @@ import { gsap } from "gsap";
 import { CAMERA, BMO, TAPE_SLOTS, TAPE_SCALE, TAPE_LEAN, makeCamera, projectRect, zoomPose } from "./layout.js";
 import { createBmo } from "./bmo.js";
 import { createTape3D, tapeThumbnail, TAPE } from "./tapes.js";
-import { W, H } from "../scene/stage.js";
+import { W, H, visibleStageRect } from "../scene/stage.js";
 
 /* gün dilimine göre ışık: gündüz sıcak beyaz + sağdaki pencereden güneş; gece mavi ortam + fener ışıkları */
 const LIGHTS = {
@@ -16,13 +16,22 @@ const LIGHTS = {
   night: { sky: 0x6b7bd6, ground: 0x3a2414, hemi: 0.7, sun: 0.35, sunColor: 0x9fb4ff, lamp: 1.6, label: 0.72 },
 };
 
-export async function createWorld({ canvas, state, bus, reduced, projects, lang, calib = false, onCameraChange, fontsReady }) {
+export async function createWorld({ canvas, state, bus, reduced, projects, lang, calib = false, onCameraChange, fontsReady, view }) {
   /* etiketler ve yüz canvas'a çizilmeden önce yazı tipleri */
   await Promise.all([
     fontsReady, document.fonts?.load("62px 'Gochi Hand'"), document.fonts?.load("30px VT323"),
   ].map((p) => Promise.resolve(p).catch(() => {})));
 
-  const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+  /* Çizim tamponu bağlam kurulmadan önce son boyutuna getirilir: kurulumdan sonraki ilk yeniden ayırma (setPixelRatio)
+     gerçek GPU'da boyuttan bağımsız ~100 ms sürüyordu. three.js'e piksel oranı 1 verilir; tampon pikseli doğrudan yönetilir. */
+  const region = () => {
+    const r = view ? visibleStageRect(view, innerWidth, innerHeight) : { x: 0, y: 0, w: W, h: H };
+    const pr = Math.min(devicePixelRatio * (view?.k || 1), 2, Math.sqrt(4e6 / (r.w * r.h)));
+    return { ...r, bw: Math.max(1, Math.round(r.w * pr)), bh: Math.max(1, Math.round(r.h * pr)) };
+  };
+  const first = region();
+  canvas.width = first.bw; canvas.height = first.bh;
+  const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true }); // bağlam kurulamazsa fırlatır → yedek
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
 
@@ -42,6 +51,9 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   scene.add(hemi, sun);
 
   /* BMO */
+  /* kurulum parça parça: her adım arasında ana iş parçacığına nefes (uzun görev/TBT olmasın) */
+  const breathe = () => new Promise((r) => setTimeout(r, 0));
+  await breathe();
   const bmo = createBmo();
   bmo.group.updateMatrixWorld(true);       // yerel kutu: dönüşümler uygulanmadan önce (gölgeler hariç)
   const bmoLocalBox = new Box3().setFromObject(bmo.group.getObjectByName("rig"), true);
@@ -52,7 +64,8 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
 
   /* kasetler: proje sırası = yuva sırası */
   const tapes = new Map();
-  projects.slice(0, TAPE_SLOTS.length).forEach((p, i) => {
+  for (const [i, p] of projects.slice(0, TAPE_SLOTS.length).entries()) {
+    await breathe();
     const tape = createTape3D(p, lang);
     const s = TAPE_SLOTS[i];
     tape.group.position.set(...s.position);
@@ -61,7 +74,7 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
     tape.home = { position: tape.group.position.clone(), rotation: tape.group.rotation.clone() };
     scene.add(tape.group);
     tapes.set(p.id, tape);
-  });
+  }
 
   if (calib) {
     const grid = new GridHelper(12, 24, 0xff3366, 0x33ffcc);
@@ -84,11 +97,21 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   setSlice(state.slice);
   bus.on("slice:change", setSlice);
 
-  /* çözünürlük: görüntülenen boyut × dpr, en fazla 2 ve toplam ≤ ~4 MP */
+  /* Yalnızca stage'in ekranda görünen kısmı çizilir: canvas o bölgeye oturur, kamera setViewOffset ile aynı bölgeyi
+     çizer (telefonda stage'in ~%25'i görünür → ~4 kat az piksel). Çözünürlük: görüntülenen boyut × dpr, en fazla 2,
+     toplam ≤ ~4 MP. Yansıtma hesapları ofsetsiz "tam kare" kamera kopyasıyla stage pikselinde kalır. */
+  const projCam = makeCamera(W / H);
+  const full = () => {
+    projCam.position.copy(camera.position); projCam.quaternion.copy(camera.quaternion);
+    projCam.updateMatrixWorld();
+    return projCam;
+  };
   function resize() {
-    const k = canvas.getBoundingClientRect().width / W || 1;
-    renderer.setPixelRatio(Math.min(devicePixelRatio * k, 2, Math.sqrt(4e6 / (W * H))));
-    renderer.setSize(W, H, false);
+    const r = region();
+    /* konum transform ile (düzen kayması/CLS sayılmaz), boyut width/height ile */
+    Object.assign(canvas.style, { transform: `translate(${r.x}px, ${r.y}px)`, width: r.w + "px", height: r.h + "px" });
+    if (canvas.width !== r.bw || canvas.height !== r.bh) renderer.setSize(r.bw, r.bh, false); // yalnız değişince yeniden ayır
+    camera.setViewOffset(W, H, r.x, r.y, r.w, r.h);
   }
   resize();
 
@@ -157,14 +180,14 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   function rectOf(id) {
     const t = tapes.get(id);
     homeM.compose(t.home.position, new Quaternion().setFromEuler(t.home.rotation), t.group.scale);
-    return projectRect(camera, tapeCorners.map((c) => c.clone().applyMatrix4(homeM)));
+    return projectRect(full(), tapeCorners.map((c) => c.clone().applyMatrix4(homeM)));
   }
-  const bmoRect = () => projectRect(camera, corners(bmo.group, bmoLocalBox));
+  const bmoRect = () => projectRect(full(), corners(bmo.group, bmoLocalBox));
   function toClient(r) {
-    const c = canvas.getBoundingClientRect(), k = c.width / W;
+    const c = canvas.parentElement.getBoundingClientRect(), k = c.width / W; // stage
     return { left: c.left + r.left * k, top: c.top + r.top * k, width: r.width * k, height: r.height * k, right: c.left + (r.left + r.width) * k, bottom: c.top + (r.top + r.height) * k };
   }
-  const screenClientRect = () => toClient(projectRect(camera, bmo.screenCorners()));
+  const screenClientRect = () => toClient(projectRect(full(), bmo.screenCorners()));
 
   /* imleç → ışın */
   const ray = new Raycaster(), ndc = new Vector2();
@@ -194,22 +217,34 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   }
 
   /* döngü */
+  let drawn = 0, warmed;
+  const warm = new Promise((r) => { warmed = r; });
   function frame(t) {
     if (document.hidden) return;
+    if (drawn < 3 && ++drawn === 3) warmed();
     if (parDirty && !state.zoomed && !camTween) applyParallax(); // kamera uçarken parallax karışmaz
     bmo.tick(t);
     renderer.render(scene, camera);
   }
   /* shader'lar yükleme ekranı sürerken derlensin: ilk karede ana iş parçacığı takılmasın */
-  await renderer.compileAsync?.(scene, camera).catch(() => {});
+  await breathe();
+  /* paralel derleme yoksa (ör. yazılım GPU) ön derleme atlanır: ilk kare derler */
+  if (renderer.extensions.has("KHR_parallel_shader_compile")) await renderer.compileAsync(scene, camera).catch(() => {});
+  await breathe();
   renderer.setAnimationLoop(frame);
   function pause(on) { renderer.setAnimationLoop(on ? null : frame); }
   const render = () => renderer.render(scene, camera);
 
+  /* raf küçük resimleri: sahne birkaç kare çizdikten sonra (dokular yüklü), boşta ve tek tek — açılışta uzun görev olmasın */
   const thumbs = new Map();
+  let thumbChain = Promise.resolve();
+  const idle = () => new Promise((r) => (window.requestIdleCallback || ((f) => setTimeout(f, 30)))(() => r(), { timeout: 600 }));
   function thumbOf(id) {
     const key = id + ":" + tapes.get(id).group.getObjectByName("label").userData.lines.join("|");
-    if (!thumbs.has(key)) thumbs.set(key, tapeThumbnail(renderer, tapes.get(id), 160));
+    if (!thumbs.has(key)) {
+      thumbChain = thumbChain.then(() => warm).then(idle).then(() => tapeThumbnail(renderer, tapes.get(id), Math.round(160 * Math.min(devicePixelRatio, 2)))).catch(() => null);
+      thumbs.set(key, thumbChain);
+    }
     return thumbs.get(key);
   }
 

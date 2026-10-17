@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { bgSources, bgOpacity, initBackground } from "../../src/scene/background.js";
+import { bgSources, bgOpacity, initBackground, BG_SIZES } from "../../src/scene/background.js";
 import { createBus } from "../../src/state.js";
+import { gsap } from "gsap";
 
 const img = (decode) => { const el = document.createElement("img"); el.decode = decode; return el; };
 
@@ -60,4 +61,59 @@ describe("initBackground", () => {
     expect(nightEl.style.opacity).toBe("1");
     expect(dayEl.style.opacity).toBe("0");
   });
+
+  it("gündüz dilimlerinde gece görseli sayfa yüklenip boşa çıkınca bile indirilmez (yalnız gerekince)", async () => {
+    vi.useFakeTimers();
+    const dayEl = img(() => Promise.resolve()), nightEl = img(() => Promise.resolve());
+    initBackground({ dayEl, nightEl, state: { slice: "morning", narrow: false }, bus: createBus(), reduced: true });
+    window.dispatchEvent(new Event("load"));
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(nightEl.getAttribute("src")).toBeNull();
+  });
+
+  it("gece görseli geçiş anında iniyorsa çapraz geçiş çözülmesini bekler", async () => {
+    let decoded;
+    const dayEl = img(() => Promise.resolve()), nightEl = img(() => new Promise((r) => { decoded = r; })), bus = createBus();
+    initBackground({ dayEl, nightEl, state: { slice: "noon", narrow: false }, bus, reduced: true });
+    bus.emit("slice:change", "night");
+    await Promise.resolve();
+    expect(gsap.getTweensOf(nightEl)).toHaveLength(0); // çözülmeden geçiş başlamaz
+    decoded();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(gsap.getTweensOf(nightEl).length).toBeGreaterThan(0);
+  });
+
+  it("gündüz dilimlerinde gece görseli hemen indirilmez, geceye geçince yüklenir", () => {
+    const dayEl = img(() => Promise.resolve()), nightEl = img(() => Promise.resolve()), bus = createBus();
+    initBackground({ dayEl, nightEl, state: { slice: "noon", narrow: false }, bus, reduced: true });
+    expect(nightEl.getAttribute("src")).toBeNull();
+    bus.emit("slice:change", "night");
+    expect(nightEl.getAttribute("src")).toBe("/bg/night-1920.webp");
+  });
+
+  it("ready yalnızca görünecek görselin çözülmesini bekler", async () => {
+    vi.useFakeTimers();
+    const dayEl = img(() => Promise.resolve()), nightEl = img(() => new Promise(() => {}));
+    const bg = initBackground({ dayEl, nightEl, state: { slice: "noon", narrow: false }, bus: createBus(), reduced: true });
+    let done = false;
+    bg.ready.then(() => { done = true; });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(done).toBe(true);
+  });
+
+  it("HTML'de verilmiş kaynakları yeniden yazmaz (erken keşif bozulmasın)", () => {
+    const dayEl = img(() => Promise.resolve()), nightEl = img(() => Promise.resolve());
+    dayEl.setAttribute("src", "/bg/day-1920.webp");
+    const set = vi.spyOn(dayEl, "setAttribute");
+    initBackground({ dayEl, nightEl, state: { slice: "noon", narrow: false }, bus: createBus(), reduced: true });
+    expect(set).not.toHaveBeenCalledWith("src", expect.anything());
+  });
+
+  it("sizes ön yükleme tarayıcısının anlayacağı biçimde (max() yok, çift indirme olmasın); dar düzende telefon boyu", () => {
+    expect(BG_SIZES).not.toMatch(/max\(|min\(|calc\(/);
+    expect(BG_SIZES.startsWith("(max-width: 700px) 100vw, (orientation: portrait) 100vw")).toBe(true);
+    const html = require("node:fs").readFileSync("index.html", "utf8");
+    expect(html).toContain(`sizes="${BG_SIZES}"`);
+  });
 });
+

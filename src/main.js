@@ -111,12 +111,28 @@ function fallback() {
   listview.setNo3d(true);
 }
 
+/* tarayıcı arka plan görselinin boyasını (LCP adayı) raporlayınca — yükleme yazısı gibi erken adaylar sayılmaz;
+   desteklemiyorsa bir kare sonra; en geç 1,5 sn */
+function firstPaint() {
+  return new Promise((resolve) => {
+    const done = () => setTimeout(resolve, 0);
+    setTimeout(done, 1500);
+    if (!PerformanceObserver.supportedEntryTypes?.includes("largest-contentful-paint")) { requestAnimationFrame(done); return; }
+    new PerformanceObserver((list, obs) => {
+      if (list.getEntries().some((e) => e.element?.classList?.contains("bg"))) { obs.disconnect(); done(); }
+    }).observe({ type: "largest-contentful-paint", buffered: true });
+  });
+}
+
 async function bootWorld() {
+  /* WebGL sınaması, three.js ve kurulum ana görsel (arka plan) ekrana çizildikten sonra: ağır iş ilk boyayı geciktirmesin */
+  await background.ready;
+  await firstPaint();
   if (!hasWebGL()) { fallback(); return null; }
   const [{ createWorld }, { createChoreo }] = await Promise.all([import("./three/world.js"), import("./three/choreo3d.js")]);
   $("#world").addEventListener("webglcontextlost", fallback);
   world = await createWorld({
-    canvas: $("#world"), state, bus, reduced, projects: PROJECTS, lang: state.lang, fontsReady,
+    canvas: $("#world"), state, bus, reduced, projects: PROJECTS, lang: state.lang, fontsReady, view,
     calib: params.has("calib"), onCameraChange: () => { if (!state.narrow) relayout(); },
   });
   if (params.has("test")) Object.assign(window, { __world: world, __state: state });

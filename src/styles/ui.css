@@ -33,7 +33,8 @@
   .tray .tape:nth-child(3n + 2) { --tilt: 1.5deg; }
   .tray .tape:nth-child(3n) { --tilt: -0.5deg; }
   .tray .tape:hover, .tray .tape:focus-visible { transform: translateY(-5px) rotate(0deg); }
-  .tray .tape .thumb { display: block; width: 104px; height: auto; filter: drop-shadow(0 5px 3px rgba(20, 8, 2, .55)); }
+  .tray .tape .thumb { display: block; width: 104px; height: auto; aspect-ratio: 160 / 109; filter: drop-shadow(0 5px 3px rgba(20, 8, 2, .55)); }
+  .tray .tape .thumb:not([src]) { box-sizing: border-box; border: 3px solid var(--ink); border-radius: 8px; background: var(--shell); }
   .speech { bottom: calc(var(--tray-h) + 12px); }
   .speech small { display: none; }
 }

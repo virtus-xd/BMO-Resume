@@ -1,5 +1,5 @@
 /* Gündüz: havada toz. Gece: ateş böcekleri. Konumlar görselden bağımsız, sahnenin orta bandında. Tek canvas, sahne ölçeğinde. */
-const DPR = 2;
+const DPR = 1; // küçük, yumuşak noktalar: 1× yeter (2× her karede 8 MP temizlemek demekti)
 const BAND = { x0: 240, x1: 1680, y0: 300, y1: 1000 };
 
 export function inBand(x, y) {

@@ -2,86 +2,13 @@ html, body { height: 100%; margin: 0; }
 body { background: #3a2414; color: var(--paper); font-family: var(--f-body); overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; transition: background-color .6s; }
 .room { position: fixed; inset: 0; overflow: clip; } /* clip: odak da kaydıramaz (hidden kaydırılabilir) */
 .stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; }
-.camera { position: absolute; inset: 0; transform-origin: 0 0; }
-.layer { position: absolute; inset: 0; }
 .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: filter .5s; }
-.layer > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .tint { position: absolute; inset: 0; pointer-events: none; background: var(--tint-c); opacity: var(--tint); mix-blend-mode: multiply; transition: opacity .6s, background-color .6s; }
 .vignette { position: absolute; inset: -2px; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 55%, transparent 55%, rgba(28, 10, 3, .5)); }
-
-/* --- SVG boyama --- */
-.o { stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
-.c-sky { fill: var(--sky); } .c-sky2 { fill: var(--sky2); } .c-hill { fill: var(--hill); } .c-hill2 { fill: var(--hill2); } .c-sun { fill: var(--sun); }
-.c-wall { fill: var(--wall); } .c-wall-dk { fill: var(--wall-dk); } .c-floor { fill: var(--floor); }
-.c-wood { fill: var(--wood); } .c-wood-dk { fill: var(--wood-dk); }
-.c-couch { fill: var(--couch); } .c-couch-dk { fill: var(--couch-dk); } .c-cush1 { fill: var(--cush1); } .c-cush2 { fill: var(--cush2); }
-.c-rug { fill: var(--rug); } .c-gold { fill: var(--gold); } .c-pack { fill: var(--pack); } .c-pack-dk { fill: var(--pack-dk); } .c-hat { fill: var(--hat); }
-.c-viola { fill: var(--viola); } .c-viola-dk { fill: var(--viola-dk); } .c-book { fill: var(--book); } .c-gem { fill: var(--gem); }
-.c-leaf { fill: var(--leaf); } .c-leaf-dk { fill: var(--leaf-dk); } .c-pot { fill: var(--pot); }
-.c-b1 { fill: var(--b1); } .c-b2 { fill: var(--b2); } .c-b3 { fill: var(--b3); } .c-b4 { fill: var(--b4); }
-.c-ink { fill: var(--ink); } .c-paper { fill: var(--paper); }
-[class^="c-"], [class*=" c-"] { transition: fill .6s; }
-.bark { fill: none; stroke: var(--wall-dk); stroke-width: 12; stroke-linecap: round; transition: stroke .6s; }
-.ring { fill: none; stroke: var(--wall-dk); stroke-width: 6; }
-.win-frame-out { fill: none; stroke: var(--ink); stroke-width: 36; }
-.win-frame { fill: none; stroke: var(--wood); stroke-width: 24; }
-.win-bar-out { fill: none; stroke: var(--ink); stroke-width: 18; }
-.win-bar { fill: none; stroke: var(--wood); stroke-width: 10; }
-.rung-out { fill: none; stroke: var(--ink); stroke-width: 18; stroke-linecap: round; }
-.rung { fill: none; stroke: var(--wood-dk); stroke-width: 10; stroke-linecap: round; }
-.rope { fill: none; stroke: var(--wood-dk); stroke-width: 5; }
-.plank-line { fill: none; stroke: var(--floor-dk); stroke-width: 5; stroke-linecap: round; transition: stroke .6s; }
-.rug-in { fill: none; stroke: var(--rug-dk); stroke-width: 6; stroke-dasharray: 18 14; }
-.blade-line, .coin-line { fill: none; stroke: var(--gold-dk); stroke-width: 5; stroke-linecap: round; }
-.gold-line { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; }
-.fhole { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
-.strings { fill: none; stroke: var(--paper); stroke-width: 1.5; }
-.vine-stem { fill: none; stroke: var(--leaf-dk); stroke-width: 8; stroke-linecap: round; }
-.lamp-glass { fill: #ffe7a6; }
-.stars { opacity: var(--stars); transition: opacity .6s; }
-.moon-bite { fill: var(--sky); opacity: var(--moon); transition: opacity .6s, fill .6s; }
-.glow { opacity: var(--lamp); mix-blend-mode: screen; transition: opacity .6s; animation: flicker 2.6s infinite; }
-@keyframes flicker { 20% { opacity: calc(var(--lamp) * .75); } 23% { opacity: var(--lamp); } 55% { opacity: calc(var(--lamp) * .85); } }
-.cloud { animation: drift 60s ease-in-out infinite alternate; }
-@keyframes drift { to { transform: translateX(160px); } }
-
-/* --- katman etkileşimi --- */
-.room-svg { pointer-events: none; }
-.obj { pointer-events: auto; cursor: pointer; outline: none; transition: filter .2s; }
-.obj:hover, .obj:focus-visible { filter: drop-shadow(0 0 10px rgba(255, 217, 138, .95)); }
-.beam { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; filter: blur(10px); opacity: var(--beam-a); transition: opacity .6s;
-  clip-path: polygon(240px 260px, 430px 380px, 1180px 1080px, 470px 1080px);
-  background: linear-gradient(135deg, rgba(255, 236, 170, .9), rgba(255, 220, 140, .25) 60%, transparent 90%); }
-
-@media (prefers-reduced-motion: reduce) {
-  .cloud, .glow { animation: none; }
-}
-
-/* --- BMO --- */
-.bmo { position: absolute; left: 816px; top: 560px; width: 300px; height: 420px; z-index: 2; cursor: pointer; }
-.bmo > svg { width: 100%; height: 100%; overflow: visible; }
-.bmo-front { fill: var(--bmo); } .bmo-side { fill: var(--bmo-dk); }
-.bmo-screen { fill: var(--bmo-screen); }
-.bmo-slot-hole { fill: var(--ink); } .bmo-lid { fill: var(--bmo-dk); }
-.bmo-dpad { fill: var(--dpad); } .bmo-tri { fill: var(--tri); } .bmo-green { fill: var(--btn-g); } .bmo-red { fill: var(--btn-r); }
-.bmo-slit { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
-.bmo-shadow { fill: rgba(40, 16, 4, .35); }
-.limb path { fill: none; stroke: var(--ink); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
-#bmo-slot-glow { fill: none; stroke: #ffd98a; stroke-width: 8; opacity: 0; transition: opacity .2s; filter: drop-shadow(0 0 8px #ffd98a); }
-.bmo.hungry #bmo-slot-glow { opacity: 1; }
-.reel-win { fill: #6b3f22; }
-.reel circle { fill: #e9dcc0; stroke: var(--ink); stroke-width: 3; }
-.reel path { stroke: var(--ink); stroke-width: 3; }
-#bmo-face .f { fill: var(--bmo-face); }
-#bmo-face .fs { fill: none; stroke: var(--bmo-face); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
-#bmo-face .shine { fill: var(--bmo-screen); }
-#bmo-face .blush { fill: #f49ab0; opacity: .7; }
-#bmo-face .mono { font-family: var(--f-term); font-size: 30px; }
-#bmo-face .eyes { transform: translate(var(--ex, 0px), var(--ey, 0px)); transition: transform .12s; }
 .particles { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
 
-/* --- 3D dünya + erişilebilir katman --- */
-.world { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
+/* --- 3D dünya + erişilebilir katman (alttan üste: arka plan, 3D canvas, parçacıklar, kaset düğmeleri) --- */
+.world { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; pointer-events: none; }
 .tape-btns { position: absolute; inset: 0; pointer-events: none; }
 .tape { position: absolute; padding: 0; border: 0; border-radius: 10px; background: none; color: inherit; cursor: grab; touch-action: none; pointer-events: auto; }
 .tape:focus-visible, .bmo-hit:focus-visible { outline: 3px dashed #ffd98a; outline-offset: 4px; }
@@ -89,6 +16,4 @@ body { background: #3a2414; color: var(--paper); font-family: var(--f-body); ove
 .tape .tape-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .tape .thumb { display: none; }
 .bmo-hit { position: absolute; padding: 0; border: 0; border-radius: 28px; background: none; cursor: pointer; }
-.ghost { position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none; transform-origin: 50% 50%; filter: drop-shadow(0 12px 8px rgba(20, 6, 0, .45)); }
-.ghost .easel { display: none; }
 .note { position: absolute; z-index: 4; font-family: var(--f-hand); font-size: 34px; color: var(--paper); -webkit-text-stroke: 1.6px var(--ink); pointer-events: none; }
