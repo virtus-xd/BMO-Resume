@@ -55,3 +55,39 @@ test("dar düzende raftaki kaset küçük resimleri boş değil (3D kaset gizliy
   }));
   opaque.forEach((f) => expect(f).toBeGreaterThan(0.3));
 });
+
+test("BMO'nun tıklama alanı kasetlerin önüne geçmez: Hakkımda kasetinin sağ kenarına tıklamak onu takar", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  const b = await page.locator('#tapeBtns .tape[data-id="hakkimda"]').boundingBox();
+  await page.mouse.click(b.x + b.width * 0.9, b.y + b.height * 0.5);
+  await expect(page.locator("#sTitle")).toHaveText(/Hakkımda/);
+});
+
+test("#liste ile açılınca 3D çizim döngüsü baştan durur", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page, "/?t=noon&test#liste");
+  await expect(page.locator("#listview")).toBeVisible();
+  const frames = await page.evaluate(() => new Promise((r) => { const i = window.__world.renderer.info.render, f0 = i.frame; setTimeout(() => r(i.frame - f0), 700); }));
+  expect(frames).toBe(0);
+});
+
+test("hareketi azalt: BMO sallanmaz, nefes almaz", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  const pose = () => page.evaluate(() => { const b = window.__world.bmo.group; return [b.getObjectByName("rig").rotation.y, b.getObjectByName("torso").scale.y].map((v) => v.toFixed(4)).join(); });
+  const a = await pose(); await page.waitForTimeout(700); const c = await pose();
+  expect(c).toBe(a);
+  expect(a).toBe("0.0000,1.0000");
+});
+
+test("yükleme ekranı 3D dünya hazır olana kadar görünür (three.js yavaş gelse bile)", async ({ page }) => {
+  await page.route(/\/assets\/world-.*\.js$/, async (route) => { await new Promise((r) => setTimeout(r, 4500)); await route.continue(); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/?t=noon&test");
+  await page.waitForTimeout(3800);
+  await expect(page.locator("#loader")).toBeVisible();
+  await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
+  expect(await page.evaluate(() => !!window.__world)).toBe(true);
+});

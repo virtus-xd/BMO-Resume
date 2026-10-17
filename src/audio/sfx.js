@@ -56,7 +56,13 @@ export function createSfx(win = window) {
 
   return {
     /* kaset takılıyken ses açılırsa onun ezgisi başlar */
-    setEnabled(v, currentId = null) { on = v; if (!v) stopLoop(); else if (currentId) this.startLoop(currentId); },
+    /* ses düğmesine tıklama bir kullanıcı etkileşimidir: bağlam burada (zamanlayıcıda değil) kurulur/sürdürülür */
+    setEnabled(v, currentId = null) {
+      on = v;
+      if (!v) { stopLoop(); return; }
+      ensure();
+      if (currentId) this.startLoop(currentId);
+    },
     unlock() { if (unlocked) return; unlocked = true; if (on) ensure(); },
     play(name) { if (on) SOUNDS[name]?.(); },
     startLoop(id) {

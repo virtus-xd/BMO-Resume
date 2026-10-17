@@ -123,3 +123,29 @@ test("hareketi azalt: zoom ve CRT yok, ortada panel", async ({ page }) => {
   await expect(page.locator("#sTitle")).toHaveText("81 Okey");
   expect(await page.locator("#screenUi").evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
 });
+
+test("proje açıkken dar düzene geçip kapatınca kasetler rafa yerleşir (döndürme)", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page);
+  await page.locator('.tape[data-id="okey"]').click();
+  await expect(page.locator("#screenUi")).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#screenUi")).toBeHidden();
+  await expect(page.locator("#tray .tape")).toHaveCount(7);
+  await expect(page.locator('#tray .tape[data-id="tbh"]')).toBeVisible();
+});
+
+test("hareketi azalt: dar düzende açıp genişe geçince kapatınca kaset düğmeleri sahneye döner", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await ready(page);
+  await page.locator('.tape[data-id="okey"]').click();
+  await expect(page.locator("#screenUi")).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#screenUi")).toBeHidden();
+  await expect(page.locator("#tapeBtns .tape")).toHaveCount(7);
+  await expect(page.locator('#tapeBtns .tape[data-id="tbh"]')).toBeVisible();
+});

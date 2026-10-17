@@ -9,11 +9,11 @@ body { background: #3a2414; color: var(--paper); font-family: var(--f-body); ove
 
 /* --- 3D dünya + erişilebilir katman (alttan üste: arka plan, 3D canvas, parçacıklar, kaset düğmeleri) --- */
 .world { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; pointer-events: none; }
-.tape-btns { position: absolute; inset: 0; pointer-events: none; }
+.tape-btns { position: absolute; inset: 0; z-index: 2; pointer-events: none; } /* BMO'nun geniş tıklama kutusu kasetleri örtmesin */
 .tape { position: absolute; padding: 0; border: 0; border-radius: 10px; background: none; color: inherit; cursor: grab; touch-action: none; pointer-events: auto; }
 .tape:focus-visible, .bmo-hit:focus-visible { outline: 3px dashed #ffd98a; outline-offset: 4px; }
 .tape.gone { visibility: hidden; }
 .tape .tape-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .tape .thumb { display: none; }
-.bmo-hit { position: absolute; padding: 0; border: 0; border-radius: 28px; background: none; cursor: pointer; }
+.bmo-hit { position: absolute; z-index: 1; padding: 0; border: 0; border-radius: 28px; background: none; cursor: pointer; }
 .note { position: absolute; z-index: 4; font-family: var(--f-hand); font-size: 34px; color: var(--paper); -webkit-text-stroke: 1.6px var(--ink); pointer-events: none; }

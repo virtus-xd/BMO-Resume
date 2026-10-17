@@ -57,6 +57,7 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
   const bmo = createBmo();
   bmo.group.updateMatrixWorld(true);       // yerel kutu: dönüşümler uygulanmadan önce (gölgeler hariç)
   const bmoLocalBox = new Box3().setFromObject(bmo.group.getObjectByName("rig"), true);
+  if (reduced) bmo.setStill(true); // hareketi azalt: nefes/sallanma yok
   bmo.group.position.set(...BMO.position);
   bmo.group.rotation.y = BMO.rotY;
   bmo.group.scale.setScalar(BMO.scale);

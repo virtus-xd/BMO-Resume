@@ -34,7 +34,7 @@ export function renderScreen(p, lang, index, total) {
 
 /* BMO ekranı: 3D kamera ekrana dalar, HTML katmanı BMO ekranının yansıtılmış dikdörtgenine oturur (dar düzende tam genişlik).
    Esc / dışarı tıklama → screen:close (kaset kalır); ⏏ → screen:eject. */
-export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduced, projects, bgEls = [], insets = () => ({}) }) {
+export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduced, projects, bgEls = [], insets = () => ({}), onClosed }) {
   let shown = null, zooming = null;
   const pose = () => world.screenPose(visibleRegion(view, innerWidth, innerHeight, insets()), state.narrow ? 0.92 : 0.8);
 
@@ -83,10 +83,11 @@ export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduce
     uiEl.hidden = true; backdropEl.hidden = true; shown = null;
     document.body.classList.remove("zoomed");
     state.zoomed = false;
-    if (reduced) return (returning = Promise.resolve());
+    /* zoom sırasında yerleşim ertelenmişti (ör. telefon döndürüldü): kapanınca kasetler doğru yere/rafa döner */
+    if (reduced) { onClosed?.(); return (returning = Promise.resolve()); }
     zoomBg(false, 0.6);
     world.bmo.setStill(false);
-    returning = world.flyCamera(null, 0.6).then(() => { if (!state.zoomed) world.resetCamera(); });
+    returning = world.flyCamera(null, 0.6).then(() => { if (!state.zoomed) { world.resetCamera(); onClosed?.(); } });
     return returning;
   }
 

@@ -74,9 +74,9 @@ bus.on("say", (text) => speech.say(text));
 bus.on("sfx", (name) => sfx.play(name));
 bus.on("sound:change", (on) => sfx.setEnabled(on, state.current?.id));
 /* AudioContext yalnızca kullanıcı etkileşiminde kurulur */
+/* yalnız etkinleştirme sayılan olaylar (dokunmatikte pointerdown sayılmaz; iOS touchend/click ister) */
 const unlock = () => sfx.unlock();
-addEventListener("pointerdown", unlock, { once: true, capture: true });
-addEventListener("keydown", unlock, { once: true, capture: true });
+["pointerup", "touchend", "click", "keydown"].forEach((t) => addEventListener(t, unlock, { once: true, capture: true }));
 
 let screen = null;
 const byId = (id) => PROJECTS.find((p) => p.id === id);
@@ -136,6 +136,7 @@ async function bootWorld() {
     calib: params.has("calib"), onCameraChange: () => { if (!state.narrow) relayout(); },
   });
   if (params.has("test")) Object.assign(window, { __world: world, __state: state });
+  if (state.listOpen) world.pause(true); // #liste ile açıldı: liste kapanınca list:toggle döngüyü sürdürür
 
   face = createFace((n) => world.bmo.setFace(n));
   face.setBase("idle");
@@ -151,7 +152,7 @@ async function bootWorld() {
   const choreo = createChoreo({ world, bus, state, reduced, notesHost: $("#stage") });
   screen = createScreen({
     uiEl: $("#screenUi"), backdropEl: $("#screenBackdrop"), world, view, state, bus, reduced, projects: PROJECTS,
-    bgEls: [$("#bgDay"), $("#bgNight")],
+    bgEls: [$("#bgDay"), $("#bgNight")], onClosed: () => relayout(),
     insets: () => ({ top: $("#topbar").getBoundingClientRect().bottom, bottom: state.narrow ? innerHeight - $("#tray").getBoundingClientRect().top : 0 }),
   });
   flow = createFlow({ anim: choreo, buttons: tapeBtns, bus, state, screen });
@@ -201,7 +202,9 @@ bus.on("lang:change", () => {
 });
 
 /* --- açılış --- */
-runLoader({ el: $("#loader"), barEl: $("#loaderBar"), waits: [fontsReady, background.ready, worldReady] })
+/* yükleme ekranı three.js ve dünya kurulurken görünür kalır (spec §2): yazı tipi ve arka planın kendi 2,5 sn tavanı var,
+   dünya için üst sınır 8 sn (yavaş ağda boş oda görünmesin; yine de sonsuza beklemesin) */
+runLoader({ el: $("#loader"), barEl: $("#loaderBar"), timeout: 8000, waits: [fontsReady, background.ready, worldReady] })
   .then(() => worldReady)
   .then((behavior) => {
     if (!behavior) return;

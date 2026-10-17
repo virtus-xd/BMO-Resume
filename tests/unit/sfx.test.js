@@ -31,6 +31,14 @@ describe("createSfx", () => {
     sfx.play("pick");
     expect(AC).toHaveBeenCalledTimes(1);
   });
+  it("ses açma tıklaması (etkileşim içinde) AudioContext'i hemen kurar/sürdürür — iOS'ta sonradan zamanlayıcıdan değil", () => {
+    const AC = fakeAC();
+    const sfx = createSfx({ AudioContext: AC });
+    sfx.unlock();
+    expect(AC).not.toHaveBeenCalled(); // ses kapalıyken kurulmaz
+    sfx.setEnabled(true);
+    expect(AC).toHaveBeenCalledTimes(1);
+  });
   it("kaset takılıyken ses açılınca chiptune başlar", () => {
     vi.useFakeTimers();
     const AC = fakeAC();
