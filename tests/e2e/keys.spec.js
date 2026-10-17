@@ -100,15 +100,17 @@ test("kaset takılıyken ekranın sağ üstünde simgeler; dil simgesinde odak k
   await expect(page.locator("#screenUi [data-ctl=time]")).toHaveText("◒");
 });
 
-test("telefonda tam ekran görünümde simgeler sağ üstte ve dokunulabilir boyutta", async ({ page }) => {
+test("telefonda simgeler BMO ekranının sağ üstünde ve dokunulabilir boyutta", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await ready(page);
   await page.locator('.tape[data-id="okey"]').click();
   await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+  const ui = await page.locator("#screenUi").boundingBox();
   for (const b of await page.locator("#screenUi .s-ctl button").all()) {
     const r = await b.boundingBox();
-    expect(r.width).toBeGreaterThanOrEqual(40); expect(r.height).toBeGreaterThanOrEqual(40);
-    expect(r.x + r.width).toBeLessThanOrEqual(390);
+    expect(r.width).toBeGreaterThanOrEqual(28); expect(r.height).toBeGreaterThanOrEqual(28);
+    expect(r.x + r.width).toBeLessThanOrEqual(ui.x + ui.width);
+    expect(r.y).toBeLessThan(ui.y + ui.height * 0.3);
   }
 });
 

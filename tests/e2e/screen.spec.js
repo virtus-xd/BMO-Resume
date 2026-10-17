@@ -104,15 +104,30 @@ test("zoom sürerken pencere boyutu değişirse ekran görünür alanda kalır",
   await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
 });
 
-test("dar düzende açılan ekran tam genişlik", async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
-  await ready(page);
-  await page.locator('.tape[data-id="okey"]').click();
-  await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
-  await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
-  const box = await page.locator("#screenUi").boundingBox();
-  expect(box.width).toBeGreaterThanOrEqual(375 - 32 - 1);
-});
+for (const [w, h] of [[375, 812], [390, 844]]) {
+  test(`${w}×${h}: dar düzende ekran BMO'nun yatay ekranına oturur, taşmaz; içerik ekranın içinde kayar`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await ready(page, "/?t=noon&test");
+    await page.locator('.tape[data-id="stok"]').click();
+    await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
+    await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
+    const { s, u } = await page.evaluate(() => {
+      const s = window.__world.screenClientRect(), u = document.getElementById("screenUi").getBoundingClientRect();
+      return { s: { l: s.left, t: s.top, r: s.left + s.width, b: s.top + s.height }, u: { l: u.left, t: u.top, r: u.right, b: u.bottom, w: u.width, h: u.height } };
+    });
+    expect(u.w / u.h).toBeGreaterThan(1.3); // BMO'nun ekranı gibi yatay
+    expect(u.w).toBeGreaterThan(w * 0.8);
+    expect(u.l).toBeGreaterThanOrEqual(s.l - 1); expect(u.r).toBeLessThanOrEqual(s.r + 1);
+    expect(u.t).toBeGreaterThanOrEqual(s.t - 1); expect(u.b).toBeLessThanOrEqual(s.b + 1);
+    /* sığmayan içerik ekranın içinde kayar; altta ▼ devamı gösterir, sona gelince kalkar */
+    await expect(page.locator("#screenUi")).toHaveClass(/more/);
+    const eject = page.locator("#screenUi [data-act=eject]");
+    await eject.scrollIntoViewIfNeeded();
+    await expect(page.locator("#screenUi")).not.toHaveClass(/more/);
+    await eject.click();
+    await expect(page.locator("#screenUi")).toBeHidden();
+  });
+}
 
 test("hareketi azalt: zoom ve CRT yok, ortada panel", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });

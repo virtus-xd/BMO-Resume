@@ -13,7 +13,6 @@
 .s-ctl [data-ctl=sound][aria-pressed=true] { background: var(--bmo-face); color: var(--bmo-screen); }
 .s-ctl [data-ctl=sound][aria-pressed=false] { text-decoration: line-through; text-decoration-thickness: 2px; }
 .s-ctl button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-.screen-ui.full .s-ctl button { min-width: 40px; height: 40px; }
 .screen-ui .chip { border: 2px solid currentColor; border-radius: 6px; padding: 0 8px; }
 .screen-ui .chip.live { background: var(--bmo-face); color: var(--bmo-screen); }
 .screen-ui h2 { margin: .25em 0 0; font-weight: 400; font-size: clamp(34px, 8cqw, 72px); line-height: .95; outline: none; text-wrap: balance; }
@@ -28,7 +27,21 @@
 .s-actions a { background: var(--bmo-face); color: var(--bmo-screen); border: 0; }
 .s-eject { margin-left: auto; background: #c0362e; color: #fff; border: 3px solid var(--ink); box-shadow: 0 3px 0 rgba(30, 10, 2, .4); }
 .s-actions a:focus-visible, .s-eject:focus-visible, .s-shots:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.screen-ui.full { border: 4px solid var(--ink); }
+/* telefonda BMO'nun küçük yatay ekranı: sıkı düzen; sığmayan içerik ekranın içinde kayar */
+.screen-ui.compact { padding: 10px 12px; border-radius: 10px; }
+.screen-ui.compact .s-row { font-size: 13px; }
+.screen-ui.compact .s-ctl { gap: 4px; }
+.screen-ui.compact .s-ctl button { min-width: 30px; height: 30px; padding: 0 4px; font-size: 16px; }
+.screen-ui.compact h2 { margin-top: .15em; font-size: 30px; }
+.screen-ui.compact .s-kind { font-size: 16px; }
+.screen-ui.compact .s-desc { margin: 8px 0; font-size: 14px; line-height: 1.45; }
+.screen-ui.compact .s-stack { margin-bottom: 10px; }
+.screen-ui.compact .s-stack li { font-size: 14px; }
+.screen-ui.compact .s-actions a, .screen-ui.compact .s-eject { min-height: 36px; padding: 0 10px; font-size: 17px; }
+/* aşağıda devamı var: ekranın altında yanıp sönen ▼ (kaydırınca kalkar) */
+.screen-ui.more::after { content: "▼"; position: sticky; bottom: 0; display: block; width: fit-content; margin: -1.1em 0 0 auto; padding: 0 6px;
+  font-size: 18px; line-height: 1.1; color: var(--bmo-face); background: var(--bmo-screen); border-radius: 4px; pointer-events: none; animation: caret 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .screen-ui.more::after { animation: none; } }
 @media (prefers-reduced-motion: reduce) { .screen-ui.on { animation: none; } }
 .screen-ui.panel { left: 50%; top: 50%; width: min(560px, 92vw); max-height: 84vh; height: auto; container-type: inline-size; transform: translate(-50%, -50%); border: 5px solid var(--ink); }
 body.zoomed .bg { filter: blur(4px) brightness(.7); }

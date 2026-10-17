@@ -48,28 +48,30 @@ export function renderScreen(p, lang, index, total, ctl) {
   </div>`;
 }
 
-/* BMO ekranı: 3D kamera ekrana dalar, HTML katmanı BMO ekranının yansıtılmış dikdörtgenine oturur (dar düzende tam genişlik).
+/* BMO ekranı: 3D kamera ekrana dalar, HTML katmanı BMO ekranının yansıtılmış dikdörtgenine oturur. Telefonda da öyle:
+   kamera ekranı genişliğe sığdırır, katman sıkı düzende (compact) ve sığmayan içerik ekranın içinde kayar (▼ devamı).
    Esc / dışarı tıklama → screen:close (kaset kalır); ⏏ → screen:eject. */
 export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduced, projects, bgEls = [], insets = () => ({}), onClosed }) {
   let shown = null, zooming = null;
-  const pose = () => world.screenPose(visibleRegion(view, innerWidth, innerHeight, insets()), state.narrow ? 0.92 : 0.8);
+  const pose = () => world.screenPose(visibleRegion(view, innerWidth, innerHeight, insets()), state.narrow ? 0.94 : 0.8);
 
   function placeUi() {
     if (reduced) return;
-    uiEl.classList.toggle("full", state.narrow);
-    if (state.narrow) {
-      const { top = 0, bottom = 0 } = insets();
-      Object.assign(uiEl.style, { left: "16px", top: top + 8 + "px", width: innerWidth - 32 + "px", height: innerHeight - top - bottom - 16 + "px" });
-      return;
-    }
+    uiEl.classList.toggle("compact", state.narrow);
     const r = world.screenClientRect(), inset = Math.min(r.width, r.height) * 0.035;
     Object.assign(uiEl.style, { left: r.left + inset + "px", top: r.top + inset + "px", width: r.width - 2 * inset + "px", height: r.height - 2 * inset + "px" });
+    more();
   }
+  /* aşağıda okunmamış içerik varsa ▼ (CSS) */
+  const more = () => uiEl.classList.toggle("more", uiEl.scrollHeight - uiEl.scrollTop - uiEl.clientHeight > 4);
+  uiEl.addEventListener("scroll", more, { passive: true });
   function fill(p) { uiEl.innerHTML = renderScreen(p, state.lang, projects.indexOf(p), projects.length, state); }
   function show() {
     uiEl.hidden = false;
     uiEl.classList.remove("on"); void uiEl.offsetWidth; uiEl.classList.add("on");
+    uiEl.scrollTop = 0;
     uiEl.querySelector("#sTitle").focus({ preventScroll: true });
+    more();
   }
   /* arka plan görseli BMO'ya doğru büyür (bulanıklık body.zoomed ile CSS'te) */
   function zoomBg(on, duration) {
@@ -119,6 +121,7 @@ export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduce
     const ctl = uiEl.contains(document.activeElement) ? document.activeElement.dataset.ctl : null;
     fill(shown);
     (ctl ? uiEl.querySelector(`[data-ctl=${ctl}]`) : uiEl.querySelector("#sTitle")).focus({ preventScroll: true });
+    more();
   }
   const repaint = () => paintCtl(uiEl, state);
   bus.on("sound:change", repaint);
