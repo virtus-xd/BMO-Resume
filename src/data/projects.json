@@ -10,7 +10,11 @@
     },
     "line": { "tr": "Bu kaset sahibimi anlatıyor. Erdem ile tanış!", "en": "This tape is all about my owner. Meet Erdem!" },
     "stack": ["Web", "Unity", "Mobil", "IoT"], "shots": [],
-    "links": [{ "label": "GitHub", "url": "" }, { "label": "LinkedIn", "url": "" }]
+    "links": [
+      { "label": "GitHub", "url": "https://github.com/virtus-xd" },
+      { "label": "LinkedIn", "url": "https://www.linkedin.com/in/erdem-%C3%B6z-391058292/" },
+      { "label": "CV (PDF)", "url": "/erdem-oz-cv.pdf" }
+    ]
   },
   {
     "id": "okey", "status": "dev",

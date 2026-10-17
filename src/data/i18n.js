@@ -60,7 +60,7 @@ export const STRINGS = {
     shots: "Screenshots",
     list_title: "Erdem — Projects",
     list_back: "✕ Back to the room",
-    cv: "Download CV (PDF)",
+    cv: "Download CV (PDF, Turkish)",
     contact: "Contact",
     projects: "Projects",
     footer_note: "BMO is fan art. Adventure Time © Cartoon Network.",
