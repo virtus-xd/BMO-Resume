@@ -15,6 +15,7 @@
 
 /* --- dar düzen kaset rafı: bg2'nin kendi boyalı tahtası, mürekkep kontur, ön çıta; kasetler hafif eğik durur --- */
 .tray { display: none; }
+.tape-fly { position: fixed; z-index: 13; pointer-events: none; filter: drop-shadow(0 5px 3px rgba(20, 8, 2, .55)); } /* rafa dönen kaset */
 :root { --tray-wood: url(/bg/day-1920.webp); }
 .t-night { --tray-wood: url(/bg/night-1920.webp); }
 @media (max-width: 700px), (orientation: portrait) {

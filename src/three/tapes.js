@@ -11,6 +11,10 @@ import { loc } from "../data/i18n.js";
 /* Kaset: gövde 0.7 × 0.44 × 0.1; grup orijini alt-orta (zemine oturur). Etiket canvas'ı 512×256: üstte proje
    renginde şerit, ortada en fazla 2 satır başlık, altta pencere (makara mesh'leri pencerenin önünde). */
 export const TAPE = { w: 0.7, h: 0.44, d: 0.1 };
+/* raf küçük resminin kamerası; THUMB_FRAME: resmin eni/boyu kasetin kaç katı (kaset ortada) */
+const THUMB = { fov: 20, dist: 1.75, ratio: 0.68 };
+const thumbH = 2 * THUMB.dist * Math.tan((THUMB.fov * Math.PI) / 360);
+export const THUMB_FRAME = { w: thumbH / THUMB.ratio / TAPE.w, h: thumbH / TAPE.h };
 const LABEL = { w: 0.6, h: 0.3, y: 0.045 };
 const WIN = { x0: 120, x1: 392, y0: 150, y1: 230, reels: [170, 342], r: 28 };
 const toPlane = (px, py) => [(px / 512 - 0.5) * LABEL.w, LABEL.y + (0.5 - py / 256) * LABEL.h];
@@ -126,7 +130,7 @@ export function createTape3D(project, lang) {
 
 /* dar düzen rafı için: kaseti ana renderer'ın sol alt köşesine bir kez çizip 2D canvas'a kopyalar */
 export function tapeThumbnail(renderer, tape3d, size = 160) {
-  const h = Math.round(size * 0.68);
+  const h = Math.round(size * THUMB.ratio);
   const scene = new Scene();
   scene.add(new HemisphereLight(0xf4f8ff, 0x7a5434, 1.4));
   const sun = new DirectionalLight(0xfff0d0, 1.6); sun.position.set(2, 3, 4); scene.add(sun);
@@ -137,8 +141,8 @@ export function tapeThumbnail(renderer, tape3d, size = 160) {
   g.visible = true; // dar düzende sahnedeki kaset gizlidir; küçük resim yine de çizilmeli
   g.getObjectByName("tapeShadow").visible = false;
   scene.add(g);
-  const cam = new PerspectiveCamera(20, size / h, 0.1, 10);
-  cam.position.set(0, TAPE.h / 2, 1.75); cam.lookAt(0, TAPE.h / 2, 0);
+  const cam = new PerspectiveCamera(THUMB.fov, size / h, 0.1, 10);
+  cam.position.set(0, TAPE.h / 2, THUMB.dist); cam.lookAt(0, TAPE.h / 2, 0);
 
   const vp = renderer.getViewport(new Vector4()), sc = renderer.getScissor(new Vector4()), test = renderer.getScissorTest();
   const pr = renderer.getPixelRatio();

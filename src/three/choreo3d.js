@@ -1,14 +1,16 @@
 import { Matrix4, Quaternion, Vector3 } from "three";
 import { gsap } from "gsap";
-import { TAPE } from "./tapes.js";
+import { TAPE, THUMB_FRAME } from "./tapes.js";
 import { TAPE_SCALE } from "./layout.js";
+import { flyToTray, revealInTray } from "../ui/trayFly.js";
 
 const LIFT = 0.35;          // sürüklerken kasetin zeminden yüksekliği
 const NEAR = 0.9;           // yuvaya bu uzaklıktan yakınsa takılır
 const TILT = (12 * Math.PI) / 180;
 
-/* Kasetlerin 3D koreografisi (spec §6): kaldır/sürükle, tak, çıkar, ıskala; takılıyken notalar */
-export function createChoreo({ world, bus, state, reduced, notesHost }) {
+/* Kasetlerin 3D koreografisi (spec §6): kaldır/sürükle, tak, çıkar, ıskala; takılıyken notalar.
+   trayButton(id): dar düzende kasetin raftaki düğmesi (çıkan/ıskalanan kaset oraya döner) */
+export function createChoreo({ world, bus, state, reduced, notesHost, trayButton }) {
   const { bmo, tapes } = world;
   const halfH = (TAPE.h * TAPE_SCALE) / 2;
   const homeQ = (tape) => new Quaternion().setFromEuler(tape.home.rotation);
@@ -101,7 +103,25 @@ export function createChoreo({ world, bus, state, reduced, notesHost }) {
     bmo.setReels(true);
   }
 
-  /* --- çıkar: yuvadan fırlar, yerine seker --- */
+  /* --- telefonda rafa dönüş: odadaki yuva ekran dışında kalır; 3D kaset yerini raftaki küçük resminin
+     kopyasına bırakır (aynı görünüm: yüzü kameraya dönük), kopya raftaki yerine uçar.
+     shelfOf: rafa dönecekse düğmesi; raf hemen o yere kaymaya başlar (iniş anına kadar biter) --- */
+  function shelfOf(id) {
+    const button = state.narrow ? trayButton?.(id) ?? null : null;
+    if (button) revealInTray(button);
+    return button;
+  }
+  const faceCamera = () => world.camera.quaternion.clone();
+  async function toShelf(id, button, quick) {
+    const tape = tapes.get(id), g = tape.group, r = world.liveRect(id);
+    const w = r.width * THUMB_FRAME.w, h = r.height * THUMB_FRAME.h;
+    g.visible = false;
+    g.position.copy(tape.home.position); g.rotation.copy(tape.home.rotation);
+    await flyToTray(button, { left: r.left + (r.width - w) / 2, top: r.top + (r.height - h) / 2, width: w, height: h },
+      { duration: quick ? 0.35 : 0.55, onLand: () => bus.emit("sfx", "shelf") });
+  }
+
+  /* --- çıkar: yuvadan fırlar, yerine seker (telefonda rafa uçar) --- */
   async function eject3D(id, { quick = false } = {}) {
     const tape = tapes.get(id), g = tape.group;
     bmo.setReels(false);
@@ -112,10 +132,16 @@ export function createChoreo({ world, bus, state, reduced, notesHost }) {
     g.position.copy(slot).addScaledVector(normal, -0.02);
     g.quaternion.copy(q);
     g.visible = true;
+    const shelf = shelfOf(id);
     await lid(true, 0.12, "power2.out");
     const out = slot.clone().addScaledVector(normal, TAPE.h * g.scale.x + 0.15); out.y += 0.25;
-    await tweenTo(g.position, { x: out.x, y: out.y, z: out.z, duration: quick ? 0.18 : 0.25, ease: "power2.out" });
+    const pop = quick ? 0.18 : 0.25;
+    await Promise.all([
+      tweenTo(g.position, { x: out.x, y: out.y, z: out.z, duration: pop, ease: "power2.out" }),
+      shelf && slerpTo(g, faceCamera(), pop, "power2.out"),
+    ]);
     lid(false, 0.15, "back.out(3)");
+    if (shelf) return toShelf(id, shelf, quick);
     const h = tape.home.position, dur = quick ? 0.3 : 0.5;
     await Promise.all([
       tweenTo(g.position, { x: h.x, z: h.z, duration: dur, ease: "power1.inOut" }),
@@ -126,13 +152,18 @@ export function createChoreo({ world, bus, state, reduced, notesHost }) {
     g.visible = homeVisible;
   }
 
-  /* --- ıskala: düşer, seker, yerine döner --- */
+  /* --- ıskala: düşer, seker, yerine döner (telefonda zıplayıp rafa uçar) --- */
   async function miss3D(id) {
     drag.delete(id);
     const tape = tapes.get(id), g = tape.group, h = tape.home.position;
     if (reduced) { snapHome(id); return; }
     gsap.killTweensOf(g.position); gsap.killTweensOf(g.rotation);
+    const shelf = shelfOf(id);
     await tweenTo(g.position, { y: 0, duration: 0.28, ease: "bounce.out" });
+    if (shelf) {
+      await Promise.all([tweenTo(g.position, { y: 0.15, duration: 0.2, ease: "power2.out" }), slerpTo(g, faceCamera(), 0.2)]);
+      return toShelf(id, shelf, false);
+    }
     await Promise.all([
       tweenTo(g.position, { x: h.x, z: h.z, duration: 0.45, ease: "power1.out" }),
       tweenTo(g.position, { keyframes: [{ y: 0.18, duration: 0.18, ease: "power2.out" }, { y: 0, duration: 0.27, ease: "bounce.out" }] }),

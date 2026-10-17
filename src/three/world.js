@@ -184,6 +184,12 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
     return projectRect(full(), tapeCorners.map((c) => c.clone().applyMatrix4(homeM)));
   }
   const bmoRect = () => projectRect(full(), corners(bmo.group, bmoLocalBox));
+  /* kasetin şu anki yeri (istemci px): telefonda rafa uçuş buradan başlar */
+  function liveRect(id) {
+    const g = tapes.get(id).group;
+    g.updateWorldMatrix(true, false);
+    return toClient(projectRect(full(), tapeCorners.map((c) => g.localToWorld(c.clone()))));
+  }
   function toClient(r) {
     const c = canvas.parentElement.getBoundingClientRect(), k = c.width / W; // stage
     return { left: c.left + r.left * k, top: c.top + r.top * k, width: r.width * k, height: r.height * k, right: c.left + (r.left + r.width) * k, bottom: c.top + (r.top + r.height) * k };
@@ -252,7 +258,7 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
 
   return {
     bmo, tapes, camera, scene, renderer, target,
-    rectOf, bmoRect, screenClientRect, keyRect, toClient, setSlice, pause, render, resize, resetCamera, pick, floorPoint, thumbOf,
+    rectOf, liveRect, bmoRect, screenClientRect, keyRect, toClient, setSlice, pause, render, resize, resetCamera, pick, floorPoint, thumbOf,
     screenPose, flyCamera, snapCamera,
   };
 }

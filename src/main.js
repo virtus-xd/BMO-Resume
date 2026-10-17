@@ -185,7 +185,7 @@ async function bootWorld() {
     host: $("#tapeBtns"), trayHost: $("#tray"), projects: PROJECTS.slice(0, world.tapes.size), lang: state.lang,
     rectOf: world.rectOf, narrow: () => state.narrow, thumbOf: world.thumbOf,
   });
-  const choreo = createChoreo({ world, bus, state, reduced, notesHost: $("#stage") });
+  const choreo = createChoreo({ world, bus, state, reduced, notesHost: $("#stage"), trayButton: (id) => tapeBtns.buttons[id] });
   screen = createScreen({
     uiEl: $("#screenUi"), backdropEl: $("#screenBackdrop"), world, view, state, bus, reduced, projects: PROJECTS,
     bgEls: [$("#bgDay"), $("#bgNight")], onClosed: () => relayout(),
