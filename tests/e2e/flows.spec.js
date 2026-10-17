@@ -83,7 +83,7 @@ test("#liste ile hızlı görünüm doğrudan açılır, Esc ile kapanır", asyn
 
 test("TR/EN geçişi metinleri değiştirir ve kalıcıdır", async ({ page }) => {
   await ready(page);
-  await page.locator("#btnLang").click();
+  await page.locator("#bmoKeys [data-key=green]").click();
   await expect(page.locator('.tape[data-id="radar"]')).toContainText("Radar Mines");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.reload();

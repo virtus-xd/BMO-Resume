@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { renderScreen, visibleRegion } from "../../src/ui/screen.js";
+import { renderScreen, visibleRegion, paintCtl } from "../../src/ui/screen.js";
+import { t } from "../../src/data/i18n.js";
 import { esc } from "../../src/ui/html.js";
 
 describe("visibleRegion", () => {
@@ -51,5 +52,30 @@ describe("renderScreen", () => {
   it("metni HTML'e kaçışlar", () => {
     expect(renderScreen({ ...base, desc: { tr: "<b>x</b>" } }, "tr", 0, 1)).toContain("&lt;b&gt;x&lt;/b&gt;");
     expect(esc(`"'&`)).toBe("&quot;&#39;&amp;");
+  });
+});
+
+describe("ekran simgeleri (sağ üst: ses, gün saati, dil, liste)", () => {
+  const base = { id: "x", status: "live", title: { tr: "Başlık" }, kind: { tr: "Tür" }, desc: { tr: "Açıklama" }, stack: [], shots: [], links: [] };
+  const b = (n) => document.querySelector(`.s-ctl [data-ctl=${n}]`);
+  it("dört simge durumlarıyla ve erişilebilir adlarıyla çıkar", () => {
+    document.body.innerHTML = renderScreen(base, "tr", 0, 1, { sound: true, slice: "night" });
+    expect(b("sound").getAttribute("aria-pressed")).toBe("true");
+    expect(b("time").textContent).toBe("☾");
+    expect(b("lang").textContent).toBe("TR");
+    for (const n of ["sound", "time", "lang", "list"]) {
+      expect(b(n).tagName).toBe("BUTTON");
+      expect(b(n).getAttribute("aria-label")).toBeTruthy();
+    }
+    expect(b("lang").getAttribute("aria-label")).toBe(t("tr", "lang_aria"));
+  });
+  it("paintCtl simgeleri yerinde günceller (düğme değişmez, odak kaybolmaz)", () => {
+    document.body.innerHTML = renderScreen(base, "tr", 0, 1, { sound: false, slice: "noon" });
+    const s = b("sound");
+    expect(s.getAttribute("aria-pressed")).toBe("false");
+    paintCtl(document.body, { sound: true, slice: "night" });
+    expect(b("sound")).toBe(s);
+    expect(s.getAttribute("aria-pressed")).toBe("true");
+    expect(b("time").textContent).toBe("☾");
   });
 });

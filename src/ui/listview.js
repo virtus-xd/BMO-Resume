@@ -26,7 +26,9 @@ export function renderList(projects, profile, lang, { no3d = false } = {}) {
     profile.linkedin && linkA({ url: profile.linkedin, label: "LinkedIn" }),
   ].filter(Boolean);
   return `<div class="lv-inner">
-    <header class="lv-head"><h2 id="lvTitle" tabindex="-1">${esc(t(lang, "list_title"))}</h2>${no3d ? "" : `<button type="button" class="lv-close" data-act="close">${esc(t(lang, "list_back"))}</button>`}</header>
+    <header class="lv-head"><h2 id="lvTitle" tabindex="-1">${esc(t(lang, "list_title"))}</h2>${no3d
+      ? `<button type="button" class="lv-close lv-lang" data-act="lang" aria-label="${esc(t(lang, "lang_aria"))}">${esc(lang.toUpperCase())}</button>`
+      : `<button type="button" class="lv-close" data-act="close">${esc(t(lang, "list_back"))}</button>`}</header>
     ${no3d ? `<p class="lv-no3d" role="status">${esc(t(lang, "no3d"))}</p>` : ""}
     ${about ? `<p class="lv-about">${esc(loc(lang, about.desc))}</p>` : ""}
     ${cv ? `<p><a class="lv-cv" href="${esc(cv)}" download>${esc(t(lang, "cv"))}</a></p>` : ""}
@@ -41,7 +43,12 @@ const BEHIND = ["topbar", "room", "tray", "screenUi", "screenBackdrop", "fanart"
 
 export function initListview({ el, state, bus, projects, profile }) {
   let openedInApp = false, lastFocus = null, no3d = false;
-  const render = () => { el.innerHTML = renderList(projects, profile, state.lang, { no3d }); };
+  /* dil değişince yeniden çizilir; odak düğmedeyse yeni düğmeye geçer */
+  const render = () => {
+    const act = el.contains(document.activeElement) ? document.activeElement.dataset.act : null;
+    el.innerHTML = renderList(projects, profile, state.lang, { no3d });
+    if (act) el.querySelector(`[data-act=${act}]`)?.focus();
+  };
 
   function sync() {
     const open = location.hash === "#liste";
@@ -61,7 +68,10 @@ export function initListview({ el, state, bus, projects, profile }) {
     else { history.replaceState(null, "", location.pathname + location.search); sync(); }
   }
 
-  el.addEventListener("click", (e) => { if (e.target.closest("[data-act=close]")) close(); });
+  el.addEventListener("click", (e) => {
+    if (e.target.closest("[data-act=close]")) close();
+    else if (e.target.closest("[data-act=lang]")) bus.emit("ctl", "lang"); // 3D yokken dil burada değişir
+  });
   /* capture: BMO ekranının Esc dinleyicisinden önce yakalar */
   addEventListener("keydown", (e) => { if (e.key === "Escape" && !el.hidden) { e.stopPropagation(); close(); } }, true);
   addEventListener("hashchange", sync);

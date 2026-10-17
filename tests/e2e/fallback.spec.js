@@ -36,7 +36,7 @@ test("sayfa başlığı dile göre değişir", async ({ page }) => {
   await page.goto("/?t=noon");
   await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
   const tr = await page.title();
-  await page.locator("#btnLang").click();
+  await page.locator("#bmoKeys [data-key=green]").click();
   const other = await page.title();
   expect(new Set([tr, other])).toEqual(new Set(["Erdem — Portfolyo", "Erdem — Portfolio"]));
 });
@@ -51,7 +51,7 @@ test("Liste açıkken 3D çizim döngüsü durur, kapanınca sürer", async ({ p
     setTimeout(() => r(info.frame - f0), 600);
   }));
   expect(await frames()).toBeGreaterThan(0);
-  await page.locator("#btnList").click();
+  await page.locator("#bmoKeys [data-key=dpad]").click();
   await expect(page.locator("#listview")).toBeVisible();
   expect(await frames()).toBe(0);
   await page.keyboard.press("Escape");

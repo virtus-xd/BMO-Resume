@@ -24,15 +24,9 @@
 <body>
   <div class="loader" id="loader" aria-hidden="true"><div class="loader-screen"><span>LOADING</span><i><b id="loaderBar"></b></i></div></div>
 
-  <!-- üst çubuk sahneden önce: Tab sırası üst çubuk → kasetler → BMO -->
+  <!-- üst tabela; ayar tuşları yok (ses, gün saati, dil, liste BMO'nun tuşlarında ve açık ekranın köşesinde) -->
   <header class="topbar" id="topbar">
     <div class="sign"><div class="plank"><h1>Erdem</h1><p data-i18n="tagline"></p></div></div>
-    <nav class="tools">
-      <button type="button" class="tool" id="btnList" data-i18n-aria="list"><span aria-hidden="true">📋</span> <span class="lbl" data-i18n="list"></span></button>
-      <button type="button" class="tool" id="btnLang" aria-label="Language / Dil">TR</button>
-      <button type="button" class="tool" id="btnTime" data-i18n-aria="time_aria">☀</button>
-      <button type="button" class="tool" id="btnSound" aria-pressed="false" data-i18n-aria="sound_aria">🔇</button>
-    </nav>
   </header>
 
   <main class="room" id="room">
@@ -46,10 +40,17 @@
       <!-- DOM sırası = Tab sırası: kasetler → BMO -->
       <div class="tape-btns" id="tapeBtns"></div>
       <button type="button" class="bmo-hit" id="bmoHit" aria-label="BMO"></button>
+      <!-- BMO'nun 3D tuşlarının üstündeki tıklama alanları (konumları world.keyRect'ten) -->
+      <div class="bmo-keys" id="bmoKeys" hidden>
+        <button type="button" class="bmo-key" data-key="red" data-i18n-aria="sound_aria" aria-pressed="false"></button>
+        <button type="button" class="bmo-key" data-key="triangle" data-i18n-aria="time_aria"></button>
+        <button type="button" class="bmo-key" data-key="green" data-i18n-aria="lang_aria"></button>
+        <button type="button" class="bmo-key" data-key="dpad" data-i18n-aria="list_aria"></button>
+      </div>
     </div>
   </main>
 
-  <div class="speech" id="speech" aria-hidden="true" hidden><p><span class="who">&gt; BMO:</span> <span id="speechText"></span></p><small id="speechHint" data-i18n="hint"></small></div>
+  <div class="speech" id="speech" aria-hidden="true" hidden><p><span class="who">&gt; BMO:</span> <span id="speechText"></span></p><small id="speechHint" data-i18n="hint"></small><small id="speechTip" class="tip" hidden></small></div>
   <p class="sr-only" id="live" aria-live="polite"></p>
 
   <div class="tray" id="tray" data-i18n-aria="tray_aria"></div>

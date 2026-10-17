@@ -1,5 +1,5 @@
 import {
-  CanvasTexture, CapsuleGeometry, CircleGeometry, CylinderGeometry, Group, Mesh, MeshBasicMaterial, PlaneGeometry,
+  Box3, CanvasTexture, CapsuleGeometry, CircleGeometry, CylinderGeometry, Group, Mesh, MeshBasicMaterial, PlaneGeometry,
   Quaternion, SphereGeometry, SRGBColorSpace, Vector3,
 } from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
@@ -143,24 +143,28 @@ export function createBmo() {
     s.position.set(x, y, PZ + 0.0335);
     return s;
   };
+  /* her tuş parçalarıyla (parlak nokta, D-pad çukuru) bir grupta: basılınca birlikte göçer, üstüne gelince parlar */
+  const keys = {};
+  const key = (name) => (keys[name] = add(body, new Group(), "key_" + name));
+  key("dpad");
   for (const [w, h] of [[0.22, 0.072], [0.072, 0.22]]) {
-    const m = add(body, withOutline(new Mesh(new RoundedBoxGeometry(w, h, 0.04, 2, 0.014), mats.dpad), 0.008), "dpad");
+    const m = add(keys.dpad, withOutline(new Mesh(new RoundedBoxGeometry(w, h, 0.04, 2, 0.014), mats.dpad), 0.008), "dpad");
     m.position.set(-0.24, -0.3, PZ + 0.012);
   }
-  const dimple = add(body, new Mesh(new CircleGeometry(0.018, 16), toonMaterial(0xd9ac22)), "dpadDimple");
+  const dimple = add(keys.dpad, new Mesh(new CircleGeometry(0.018, 16), toonMaterial(0xd9ac22)), "dpadDimple");
   dimple.position.set(-0.24, -0.3, PZ + 0.0325);
-  shine(body, -0.31, -0.28, 0.008);
+  shine(keys.dpad, -0.31, -0.28, 0.008);
   const button = (geo, mat, x, y, rx, name) => {
-    const m = add(body, withOutline(new Mesh(geo, mat), 0.008), name);
+    const m = add(key(name), withOutline(new Mesh(geo, mat), 0.008), name);
     m.position.set(x, y, PZ + 0.014); m.rotation.x = rx;
     return m;
   };
   button(new CylinderGeometry(0.065, 0.065, 0.035, 3), mats.tri, 0.1, -0.3, -Math.PI / 2, "triangle");
-  shine(body, 0.085, -0.285, 0.008).position.z = PZ + 0.0325;
+  shine(keys.triangle, 0.085, -0.285, 0.008).position.z = PZ + 0.0325;
   button(new CylinderGeometry(0.036, 0.036, 0.03, 24), mats.green, 0.33, -0.21, Math.PI / 2, "green");
-  shine(body, 0.32, -0.198, 0.008).position.z = PZ + 0.03;
+  shine(keys.green, 0.32, -0.198, 0.008).position.z = PZ + 0.03;
   button(new CylinderGeometry(0.078, 0.078, 0.035, 32), mats.red, 0.29, -0.38, Math.PI / 2, "red");
-  shine(body, 0.265, -0.355, 0.014).position.z = PZ + 0.0325;
+  shine(keys.red, 0.265, -0.355, 0.014).position.z = PZ + 0.0325;
   for (const y of [-0.45, -0.49]) {
     const s = add(body, new Mesh(new RoundedBoxGeometry(0.14, 0.018, 0.01, 1, 0.004), ink), "grill");
     s.position.set(-0.24, y, PZ + 0.003);
@@ -298,6 +302,26 @@ export function createBmo() {
       width: SCREEN.w * s.x, height: SCREEN.h * s.y,
     };
   }
+  /* tuşlar: dünya uzayında sınırlayıcı kutunun 8 köşesi (tıklama alanı buna oturur), basma, parlama */
+  const box = new Box3();
+  function keyCorners(name) {
+    keys[name].updateWorldMatrix(true, true); // ilk çizimden önce de (açılışta yerleşim) güncel konum
+    box.setFromObject(keys[name]);
+    const out = [];
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) out.push(new Vector3(x, y, z));
+    return out;
+  }
+  function press(name) {
+    const k = keys[name];
+    if (!k) return Promise.resolve();
+    return gsap.to(k.position, { z: -0.014, duration: 0.07, ease: "power1.out", yoyo: true, repeat: 1, overwrite: true });
+  }
+  function highlight(name) {
+    for (const [n, k] of Object.entries(keys)) {
+      k.traverse((o) => { if (o.material?.emissive) o.material.emissive.setHex(n === name ? 0x555555 : 0); });
+    }
+  }
+
   function screenCorners() {
     screenMesh.updateWorldMatrix(true, false);
     return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => screenMesh.localToWorld(new Vector3((x * SCREEN.w) / 2, (y * SCREEN.h) / 2, 0)));
@@ -306,5 +330,6 @@ export function createBmo() {
   return {
     group, screenMesh, faceCanvas,
     setFace, setLid, setReels, setReach, setGlow, setStill, tick, wave, dance, squash, slotWorld, screenFrame, screenCorners,
+    keyCorners, press, highlight,
   };
 }

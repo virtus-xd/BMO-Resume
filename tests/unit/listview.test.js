@@ -1,5 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { renderList } from "../../src/ui/listview.js";
+import { describe, it, expect, vi } from "vitest";
+import { renderList, initListview } from "../../src/ui/listview.js";
+import { createBus } from "../../src/state.js";
+import { t } from "../../src/data/i18n.js";
 import { PROJECTS } from "../../src/data/projects.js";
 
 const EMPTY = { name: "Erdem", email: "", github: "", linkedin: "", cv: { tr: "", en: "" } };
@@ -34,3 +36,22 @@ describe("renderList", () => {
   });
 });
 
+
+describe("3D yokken dil düğmesi", () => {
+  it("başlıkta dil düğmesi çıkar (3D varken çıkmaz)", () => {
+    document.body.innerHTML = renderList(PROJECTS, EMPTY, "tr", { no3d: true });
+    const b = document.querySelector("[data-act=lang]");
+    expect(b.textContent).toBe("TR");
+    expect(b.getAttribute("aria-label")).toBe(t("tr", "lang_aria"));
+    expect(renderList(PROJECTS, EMPTY, "tr")).not.toContain('data-act="lang"');
+  });
+  it("tıklanınca ctl olayıyla dil değişimi istenir", () => {
+    document.body.innerHTML = `<div id="lv" hidden></div>`;
+    const bus = createBus(), fn = vi.fn();
+    bus.on("ctl", fn);
+    const lv = initListview({ el: document.getElementById("lv"), state: { lang: "tr" }, bus, projects: PROJECTS, profile: EMPTY });
+    lv.setNo3d(true);
+    document.querySelector("[data-act=lang]").click();
+    expect(fn).toHaveBeenCalledWith("lang");
+  });
+});

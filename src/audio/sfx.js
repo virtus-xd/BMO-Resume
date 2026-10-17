@@ -96,6 +96,7 @@ export function createSfx(win = window) {
     clunk: () => { tone(150, 0.12, "triangle", 0.14, 80); later(90, () => tone(95, 0.16, "triangle", 0.12)); later(320, () => { tone(523, 0.09, "square", 0.025); later(90, () => tone(784, 0.12, "square", 0.025)); }); },
     eject: () => { tone(220, 0.08, "triangle", 0.12); later(70, () => tone(440, 0.1, "triangle", 0.06, 880)); },
     blip: () => tone(560 + Math.random() * 140, 0.025, "square", 0.018),
+    key: () => tone(1250, 0.03, "square", 0.02, 900),
     giggle: () => [880, 988, 880, 1047].forEach((f, i) => later(i * 70, () => tone(f, 0.06, "square", 0.02))),
     coins: () => [1319, 1568, 1760, 2093].forEach((f, i) => later(i * 60, () => tone(f, 0.08, "triangle", 0.03))),
     viola: () => [392, 440, 494, 392].forEach((f, i) => later(i * 220, () => tone(f, 0.25, "sawtooth", 0.02))),

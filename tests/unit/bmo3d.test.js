@@ -72,3 +72,51 @@ describe("toon", () => {
     expect(mat.userData.rim.strength).toBe(0.4);
   });
 });
+
+describe("BMO tuşları", () => {
+  let bmo, getContext;
+  beforeAll(() => {
+    getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    bmo = createBmo();
+    bmo.group.updateMatrixWorld(true);
+  });
+  afterAll(() => getContext.mockRestore());
+
+  it("dört tuşun köşeleri ön yüzde, ekranın altında; kırmızı en büyük, yeşil en küçük", () => {
+    const f = bmo.screenFrame(), size = {};
+    for (const k of ["red", "triangle", "green", "dpad"]) {
+      const c = bmo.keyCorners(k);
+      expect(c).toHaveLength(8);
+      const xs = c.map((p) => p.x), ys = c.map((p) => p.y);
+      size[k] = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
+      c.forEach((p) => { expect(p.y).toBeLessThan(f.center.y - 0.2); expect(p.z).toBeGreaterThan(0.25); });
+    }
+    expect(size.green).toBeLessThan(size.triangle);
+    expect(size.red).toBeGreaterThan(size.green);
+  });
+
+  it("köşeler grup taşınıp henüz çizilmemişken de güncel konumdan hesaplanır", () => {
+    const fresh = createBmo();
+    const before = fresh.keyCorners("red")[0].clone();
+    fresh.group.position.set(0, 0, 1.15); fresh.group.scale.setScalar(0.7); // matrixWorld henüz güncellenmedi
+    const after = fresh.keyCorners("red")[0];
+    expect(after.z).toBeCloseTo(before.z * 0.7 + 1.15, 3);
+  });
+
+  it("press tuşu içeri göçürüp geri getirir", async () => {
+    const key = bmo.group.getObjectByName("key_red");
+    const z0 = key.position.z;
+    await bmo.press("red");
+    expect(key.position.z).toBeCloseTo(z0);
+    expect(() => bmo.press("yok")).not.toThrow();
+  });
+
+  it("highlight yalnız seçilen tuşu parlatır, null hepsini söndürür", () => {
+    const glow = (k) => { let e = 0; bmo.group.getObjectByName("key_" + k).traverse((o) => { if (o.material?.emissive) e = Math.max(e, o.material.emissive.r); }); return e; };
+    bmo.highlight("triangle");
+    expect(glow("triangle")).toBeGreaterThan(0);
+    expect(glow("red")).toBe(0);
+    bmo.highlight(null);
+    expect(glow("triangle")).toBe(0);
+  });
+});

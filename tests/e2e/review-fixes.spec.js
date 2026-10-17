@@ -25,7 +25,7 @@ test("BMO ekranı açıkken açılan liste görünümünde Tab odağı listede k
   await ready(page);
   await page.locator('.tape[data-id="okey"]').click();
   await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
-  await page.locator("#btnList").click();
+  await page.locator("#screenUi [data-ctl=list]").click();
   await expect(page.locator("#listview")).toBeVisible();
   for (let i = 0; i < 3; i++) {
     await page.keyboard.press("Tab");

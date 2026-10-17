@@ -7,7 +7,7 @@ import { gsap } from "gsap";
 import { bus, state, store } from "./state.js";
 import { PROJECTS } from "./data/projects.js";
 import { PROFILE } from "./data/profile.js";
-import { t, line, pickLang, applyI18n } from "./data/i18n.js";
+import { t, line, fmt, pickLang, applyI18n } from "./data/i18n.js";
 import { initStage } from "./scene/stage.js";
 import { initBackground } from "./scene/background.js";
 import { SLICES, sliceForHour, applySlice } from "./scene/daycycle.js";
@@ -19,7 +19,7 @@ import { createTapeButtons, bindDrag } from "./ui/tapeButtons.js";
 import { createFlow } from "./ui/flow.js";
 import { createScreen } from "./ui/screen.js";
 import { createSpeech } from "./ui/speech.js";
-import { initTopbar } from "./ui/topbar.js";
+import { createControls } from "./ui/controls.js";
 import { initListview } from "./ui/listview.js";
 import { runLoader } from "./ui/loader.js";
 import { createSfx } from "./audio/sfx.js";
@@ -67,7 +67,7 @@ let face = null;
 const sfx = createSfx();
 sfx.setEnabled(state.sound);
 const speech = createSpeech({
-  bubbleEl: $("#speech"), textEl: $("#speechText"), liveEl: $("#live"),
+  bubbleEl: $("#speech"), textEl: $("#speechText"), liveEl: $("#live"), tipEl: $("#speechTip"),
   onBlip: () => sfx.play("blip"), onTalk: (on) => face?.talk(on),
 });
 bus.on("say", (text) => speech.say(text));
@@ -99,6 +99,42 @@ function relayout() {
   tapeBtns.layout();
   const r = world.bmoRect();
   Object.assign($("#bmoHit").style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+  placeKeys();
+}
+
+/* BMO'nun tuşları: kırmızı ses, üçgen gün saati, yeşil dil, artı liste. Tıklama alanı 3D tuşun yansımasına oturur;
+   küçük tuşlarda ekranda en az 24 px. */
+const KEY_CTL = { red: "sound", triangle: "time", green: "lang", dpad: "list" };
+const MIN_KEY = 24;
+let usedKeys = false;
+function placeKeys() {
+  const min = MIN_KEY / view.k;
+  for (const b of $("#bmoKeys").children) {
+    const r = world.keyRect(b.dataset.key), w = Math.max(r.width, min), h = Math.max(r.height, min);
+    Object.assign(b.style, { left: r.left + r.width / 2 - w / 2 + "px", top: r.top + r.height / 2 - h / 2 + "px", width: w + "px", height: h + "px" });
+  }
+}
+function bindKeys() {
+  let tipKey = null;
+  const tipText = (k) => fmt(t(state.lang, "tip_" + k), { s: k === "red" ? t(state.lang, state.sound ? "on" : "off") : t(state.lang, "slice_" + state.slice) });
+  /* üstüne gelince (fare/klavye odağı) tuş parlar, terminal satırında işi yazar */
+  const showTip = (k) => { tipKey = k; world.bmo.highlight(k); speech.tip(k ? tipText(k) : null); };
+  for (const b of $("#bmoKeys").children) {
+    const k = b.dataset.key;
+    b.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") showTip(k); });
+    b.addEventListener("pointerleave", () => { if (tipKey === k) showTip(null); });
+    b.addEventListener("focus", () => showTip(k));
+    b.addEventListener("blur", () => { if (tipKey === k) showTip(null); });
+    b.addEventListener("click", () => {
+      if (state.busy) return;
+      usedKeys = true;
+      world.bmo.press(k);
+      controls.run(KEY_CTL[k]);
+      bus.emit("sfx", "key");
+      if (tipKey === k) speech.tip(tipText(k)); // yeni durum
+    });
+  }
+  $("#bmoKeys").hidden = false;
 }
 
 /* WebGL yoksa ya da bağlam kaybolursa: sahne bırakılır, Liste notla açılır */
@@ -173,6 +209,7 @@ async function bootWorld() {
       onCancel: () => { choreo.release(id, 0, 0); flow.miss(byId(id)).then(orHome); },
     });
   });
+  bindKeys();
   relayout();
   /* yazı tipi geç gelirse kaset etiketleri yeniden çizilir */
   document.fonts?.addEventListener?.("loadingdone", () => {
@@ -190,7 +227,15 @@ bus.on("tape:ejected", () => sfx.stopLoop());
 
 /* --- üst çubuk, liste, dil --- */
 const listview = initListview({ el: $("#listview"), state, bus, projects: PROJECTS, profile: PROFILE });
-initTopbar({ state, bus, store, onList: () => listview.open() });
+/* ses, gün saati, dil, liste: BMO'nun tuşları, açık ekranın simgeleri ve yedek listenin dil düğmesi "ctl" yayar */
+const controls = createControls({ state, bus, store, onList: () => listview.open() });
+bus.on("ctl", (name) => controls.run(name));
+/* BMO her ayar değişikliğine tepki verir */
+const react = (key) => { bus.emit("face", { flash: "happy", ms: 700 }); bus.emit("say", t(state.lang, key)); };
+bus.on("sound:change", (on) => { $("#bmoKeys [data-key=red]").setAttribute("aria-pressed", String(on)); react(on ? "say_sound_on" : "say_sound_off"); });
+bus.on("slice:change", (s) => react("say_" + s));
+bus.on("lang:change", () => react("say_lang"));
+$("#bmoKeys [data-key=red]").setAttribute("aria-pressed", String(state.sound));
 /* Liste açıkken 3D döngü ve parçacıklar durur, boşta replikler susar (state.listOpen) */
 bus.on("list:toggle", (open) => { if (!fellBack) world?.pause(open); });
 const worldReady = bootWorld().catch((e) => { console.error("[world]", e); fallback(); return null; });
@@ -210,4 +255,8 @@ runLoader({ el: $("#loader"), barEl: $("#loaderBar"), timeout: 8000, waits: [fon
     if (!behavior) return;
     bus.emit("say", t(state.lang, "welcome"));
     behavior.wave();
+    /* tuşları kimse denemediyse BMO tanıtır (telefonda üstüne gelme ipucu yok) */
+    setTimeout(() => {
+      if (!usedKeys && !state.busy && !state.current && !state.zoomed && !state.listOpen) bus.emit("say", t(state.lang, "keys_intro"));
+    }, 9000);
   });

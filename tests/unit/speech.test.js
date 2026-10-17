@@ -56,3 +56,43 @@ describe("createSpeech", () => {
   });
 });
 
+
+describe("tip (BMO tuşunun üstüne gelince terminal satırı)", () => {
+  let b, hint, tip, sp;
+  beforeEach(() => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `<div id="b" hidden><p id="t"></p><small id="h">ipucu</small><small id="tip" hidden></small></div><p id="l"></p>`;
+    b = document.getElementById("b"); hint = document.getElementById("h"); tip = document.getElementById("tip");
+    sp = createSpeech({ bubbleEl: b, textEl: document.getElementById("t"), liveEl: document.getElementById("l"), tipEl: tip, onTalk: vi.fn(), onBlip: vi.fn() });
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("açıklamayı yazar ve dinlenen kutuyu geri getirir; üstündeyken kutu dinlenmez", () => {
+    sp.say("Hi"); vi.advanceTimersByTime(28 * 2 + 6100);
+    expect(b.classList.contains("rest")).toBe(true);
+    sp.tip("[kırmızı] ses: kapalı");
+    expect(tip.hidden).toBe(false);
+    expect(tip.textContent).toBe("[kırmızı] ses: kapalı");
+    expect(b.classList.contains("tipping")).toBe(true);
+    expect(b.classList.contains("rest")).toBe(false);
+    vi.advanceTimersByTime(10000);
+    expect(b.classList.contains("rest")).toBe(false);
+  });
+  it("tip(null) açıklamayı kaldırır, 2 sn sonra kutu yine dinlenir", () => {
+    sp.tip("x");
+    expect(b.hidden).toBe(false);
+    sp.tip(null);
+    expect(tip.hidden).toBe(true);
+    expect(b.classList.contains("tipping")).toBe(false);
+    vi.advanceTimersByTime(1900);
+    expect(b.classList.contains("rest")).toBe(false);
+    vi.advanceTimersByTime(200);
+    expect(b.classList.contains("rest")).toBe(true);
+  });
+  it("replik yazılırken açıklama kalkarsa kutu replik bitene kadar dinlenmez", () => {
+    sp.say("Uzun bir cümle burada");
+    sp.tip("x"); sp.tip(null);
+    vi.advanceTimersByTime(2100);
+    expect(b.classList.contains("rest")).toBe(false);
+  });
+});

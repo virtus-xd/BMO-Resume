@@ -189,6 +189,7 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
     return { left: c.left + r.left * k, top: c.top + r.top * k, width: r.width * k, height: r.height * k, right: c.left + (r.left + r.width) * k, bottom: c.top + (r.top + r.height) * k };
   }
   const screenClientRect = () => toClient(projectRect(full(), bmo.screenCorners()));
+  const keyRect = (name) => projectRect(full(), bmo.keyCorners(name)); // BMO tuşu (stage pikseli, bmoRect gibi)
 
   /* imleç → ışın */
   const ray = new Raycaster(), ndc = new Vector2();
@@ -251,7 +252,7 @@ export async function createWorld({ canvas, state, bus, reduced, projects, lang,
 
   return {
     bmo, tapes, camera, scene, renderer, target,
-    rectOf, bmoRect, screenClientRect, toClient, setSlice, pause, render, resize, resetCamera, pick, floorPoint, thumbOf,
+    rectOf, bmoRect, screenClientRect, keyRect, toClient, setSlice, pause, render, resize, resetCamera, pick, floorPoint, thumbOf,
     screenPose, flyCamera, snapCamera,
   };
 }

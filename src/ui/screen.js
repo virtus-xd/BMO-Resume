@@ -16,13 +16,29 @@ export function visibleRegion(view, vw, vh, { top = 0, bottom = 0 } = {}) {
 
 const pad = (n) => String(n).padStart(2, "0");
 
-export function renderScreen(p, lang, index, total) {
+/* sağ üst simgeler: kaset takılıyken ses, gün saati, dil ve liste (odada bunları BMO'nun tuşları yapar) */
+const TIME_ICON = { morning: "☼", noon: "☀︎", sunset: "◒", night: "☾" };
+const CTL = ["sound", "time", "lang", "list"];
+const CTL_ARIA = { sound: "sound_aria", time: "time_aria", lang: "lang_aria", list: "list_aria" };
+export function paintCtl(root, { sound, slice }) {
+  const b = (n) => root.querySelector(`.s-ctl [data-ctl=${n}]`);
+  if (!b("sound")) return;
+  b("sound").setAttribute("aria-pressed", String(!!sound));
+  b("time").textContent = TIME_ICON[slice] ?? TIME_ICON.noon;
+}
+function ctlHtml(lang, { sound = false, slice = "noon" } = {}) {
+  const text = { sound: "♪", time: TIME_ICON[slice] ?? TIME_ICON.noon, lang: lang.toUpperCase(), list: "☰" };
+  return `<span class="s-ctl" role="group" aria-label="${esc(t(lang, "ctl_aria"))}">${CTL.map((n) =>
+    `<button type="button" data-ctl="${n}" aria-label="${esc(t(lang, CTL_ARIA[n]))}"${n === "sound" ? ` aria-pressed="${!!sound}"` : ""}>${esc(text[n])}</button>`).join("")}</span>`;
+}
+
+export function renderScreen(p, lang, index, total, ctl) {
   const links = usableLinks(p);
   const shots = p.shots || [];
   const title = loc(lang, p.title);
   return `
   <div class="crt">
-    <div class="s-row"><span>${esc(t(lang, "side"))} · ${pad(index + 1)}/${pad(total)}</span><span class="chip${p.status === "live" ? " live" : ""}">${esc(t(lang, "status_" + p.status))}</span></div>
+    <div class="s-row"><span class="s-side">${esc(t(lang, "side"))} · ${pad(index + 1)}/${pad(total)} <span class="chip${p.status === "live" ? " live" : ""}">${esc(t(lang, "status_" + p.status))}</span></span>${ctlHtml(lang, ctl)}</div>
     <h2 id="sTitle" tabindex="-1">${esc(title)}</h2>
     <div class="s-kind">&gt; ${esc(loc(lang, p.kind))}</div>
     ${shots.length ? `<div class="s-shots" role="group" tabindex="0" aria-label="${esc(t(lang, "shots"))}">${shots.map((s, i) => `<img src="${esc(s)}" alt="${esc(title)} ${i + 1}" loading="lazy" decoding="async" onerror="this.remove()">`).join("")}</div>` : ""}
@@ -49,7 +65,7 @@ export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduce
     const r = world.screenClientRect(), inset = Math.min(r.width, r.height) * 0.035;
     Object.assign(uiEl.style, { left: r.left + inset + "px", top: r.top + inset + "px", width: r.width - 2 * inset + "px", height: r.height - 2 * inset + "px" });
   }
-  function fill(p) { uiEl.innerHTML = renderScreen(p, state.lang, projects.indexOf(p), projects.length); }
+  function fill(p) { uiEl.innerHTML = renderScreen(p, state.lang, projects.indexOf(p), projects.length, state); }
   function show() {
     uiEl.hidden = false;
     uiEl.classList.remove("on"); void uiEl.offsetWidth; uiEl.classList.add("on");
@@ -97,13 +113,22 @@ export function createScreen({ uiEl, backdropEl, world, view, state, bus, reduce
     placeUi();
   }
 
+  /* dil değişince yeniden yazılır; odak bir simgedeyse (ör. dil) o simgede kalır */
   function rerender() {
     if (!shown || uiEl.hidden) return;
+    const ctl = uiEl.contains(document.activeElement) ? document.activeElement.dataset.ctl : null;
     fill(shown);
-    uiEl.querySelector("#sTitle").focus({ preventScroll: true });
+    (ctl ? uiEl.querySelector(`[data-ctl=${ctl}]`) : uiEl.querySelector("#sTitle")).focus({ preventScroll: true });
   }
+  const repaint = () => paintCtl(uiEl, state);
+  bus.on("sound:change", repaint);
+  bus.on("slice:change", repaint);
 
-  uiEl.addEventListener("click", (e) => { if (e.target.closest("[data-act=eject]")) bus.emit("screen:eject"); });
+  uiEl.addEventListener("click", (e) => {
+    if (e.target.closest("[data-act=eject]")) bus.emit("screen:eject");
+    const ctl = e.target.closest("[data-ctl]");
+    if (ctl) bus.emit("ctl", ctl.dataset.ctl);
+  });
   backdropEl.addEventListener("click", () => bus.emit("screen:close"));
   addEventListener("keydown", (e) => {
     if (uiEl.hidden || uiEl.inert) return; // liste görünümü üstteyken ekran klavyeyi almaz
