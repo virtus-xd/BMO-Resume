@@ -5,8 +5,8 @@
     "title": { "tr": "Hakkımda", "en": "About Me" },
     "kind": { "tr": "Tanışma", "en": "Introduction" },
     "desc": {
-      "tr": "Mersin Üniversitesi Bilgisayar Mühendisliği 2. sınıf öğrencisiyim. Güçlü bir web geliştirme altyapım var; fikirleri ürüne dönüştürüp yayına almayı seviyorum. Web, mobil oyun ve donanım projeleri arasında geziyorum.",
-      "en": "I'm a second-year Computer Engineering student at Mersin University. I have a strong web development background and love turning ideas into shipped products. I move between web, mobile games and hardware projects."
+      "tr": "Mersin Üniversitesi Bilgisayar Mühendisliği 3. sınıf öğrencisiyim. Güçlü bir web geliştirme altyapım var; fikirleri ürüne dönüştürüp yayına almayı seviyorum. Web, mobil oyun ve donanım projeleri arasında geziyorum.",
+      "en": "I'm a third-year Computer Engineering student at Mersin University. I have a strong web development background and love turning ideas into shipped products. I move between web, mobile games and hardware projects."
     },
     "line": { "tr": "Bu kaset sahibimi anlatıyor. Erdem ile tanış!", "en": "This tape is all about my owner. Meet Erdem!" },
     "stack": ["Web", "Unity", "Mobil", "IoT"], "shots": [],
