@@ -82,18 +82,6 @@
     "links": [{ "label": "stogukovala.com", "url": "https://stogukovala.com" }]
   },
   {
-    "id": "radar", "status": "design",
-    "color": { "shell": "#4a3a36", "label": "#8fae5a" },
-    "title": { "tr": "Radar Mayın", "en": "Radar Mines" },
-    "kind": { "tr": "Mobil Bulmaca", "en": "Mobile Puzzle" },
-    "desc": {
-      "tr": "Mayın tarlasının gemili versiyonu: hareket eden radar penceresi ve yakıt sistemiyle her hamle bir karar. Tasarım ve planlama aşamasında.",
-      "en": "Minesweeper with a ship: a moving radar window and a fuel system make every move a decision. In design and planning."
-    },
-    "line": { "tr": "Radar açık, yakıt sınırlı. Mayınlara dikkat kaptan!", "en": "Radar on, fuel low. Watch out for mines, captain!" },
-    "stack": ["Oyun Tasarımı", "Mobil"], "shots": [], "links": []
-  },
-  {
     "id": "esp32", "status": "dev",
     "color": { "shell": "#5b3f5e", "label": "#b48cc4" },
     "title": { "tr": "ESP32 İstasyon", "en": "ESP32 Station" },

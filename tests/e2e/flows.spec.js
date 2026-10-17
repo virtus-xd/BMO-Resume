@@ -60,7 +60,7 @@ test("kaset kapılınca ipucu satırı gizlenir", async ({ page }) => {
 test("klavye: Enter ile tak, odak ekranda; Esc kapatır, odak BMO'da, Enter yeniden açar", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
-  const tape = page.locator('.tape[data-id="radar"]');
+  const tape = page.locator('.tape[data-id="esp32"]'); // bağlantısı yok: başlıktan sonraki Tab doğrudan Çıkar'a gider
   await tape.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#sTitle")).toBeFocused({ timeout: 8000 });
@@ -75,7 +75,7 @@ test("klavye: Enter ile tak, odak ekranda; Esc kapatır, odak BMO'da, Enter yeni
 test("#liste ile hızlı görünüm doğrudan açılır, Esc ile kapanır", async ({ page }) => {
   await ready(page, "/?t=noon#liste");
   await expect(page.locator("#listview")).toBeVisible();
-  await expect(page.locator(".lv-card")).toHaveCount(8);
+  await expect(page.locator(".lv-card")).toHaveCount(7);
   await expect(page.locator(".lv-about")).toContainText("Mersin");
   await page.keyboard.press("Escape");
   await expect(page.locator("#listview")).toBeHidden();
@@ -84,10 +84,10 @@ test("#liste ile hızlı görünüm doğrudan açılır, Esc ile kapanır", asyn
 test("TR/EN geçişi metinleri değiştirir ve kalıcıdır", async ({ page }) => {
   await ready(page);
   await page.locator("#bmoKeys [data-key=green]").click();
-  await expect(page.locator('.tape[data-id="radar"]')).toContainText("Radar Mines");
+  await expect(page.locator('.tape[data-id="esp32"]')).toContainText("ESP32 Station");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.reload();
-  await expect(page.locator('.tape[data-id="radar"]')).toContainText("Radar Mines");
+  await expect(page.locator('.tape[data-id="esp32"]')).toContainText("ESP32 Station");
 });
 
 test("localStorage engelliyken site açılır", async ({ page }) => {

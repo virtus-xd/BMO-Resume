@@ -14,7 +14,7 @@ test("WebGL yoksa sahne kurulmaz; Liste notla açılır, odaya dönüş gizli", 
   await expect(page.locator("#loader")).toBeHidden({ timeout: 15000 });
   await expect(page.locator("#listview")).toBeVisible();
   await expect(page.locator(".lv-no3d")).toBeVisible();
-  await expect(page.locator(".lv-card")).toHaveCount(8);
+  await expect(page.locator(".lv-card")).toHaveCount(7);
   await expect(page.locator("#listview [data-act=close]")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.locator("#listview")).toBeVisible();

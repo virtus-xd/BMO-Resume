@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { PROJECTS, validateProjects, usableLinks, assignSlots } from "../../src/data/projects.js";
 
 describe("PROJECTS", () => {
-  it("9 proje içerir ve hepsi geçerli", () => {
-    expect(PROJECTS).toHaveLength(9);
+  it("8 proje içerir ve hepsi geçerli", () => {
+    expect(PROJECTS).toHaveLength(8);
     expect(validateProjects(PROJECTS)).toEqual([]);
   });
   it("OXXO Mimarlık ve Stoğu Kovala canlı siteleriyle listede", () => {

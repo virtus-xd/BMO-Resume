@@ -45,7 +45,7 @@ test("kaset düğmesine tıklamak kaseti takar ve projeyi açar", async ({ page 
 test("dar düzende raftaki kaset küçük resimleri boş değil (3D kaset gizliyken de çizilir)", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await ready(page);
-  await expect.poll(() => page.locator("#tray .tape img[src]").count()).toBe(9);
+  await expect.poll(() => page.locator("#tray .tape img[src]").count()).toBe(8);
   const opaque = await page.locator("#tray .tape img").evaluateAll((imgs) => imgs.map((img) => {
     const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
     const ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0);

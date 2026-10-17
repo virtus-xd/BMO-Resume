@@ -47,11 +47,11 @@ test("Esc sonrası BMO'ya tıklamak ekranı yeniden açar, ⏏ kaseti yerine dö
 test("dışarı (arka plana) tıklamak ekranı kapatır, kaset kalır", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await ready(page);
-  await page.locator('.tape[data-id="radar"]').click();
+  await page.locator('.tape[data-id="stok"]').click();
   await expect(page.locator("#screenUi")).toBeVisible({ timeout: 8000 });
   await page.mouse.click(10, 890);
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(page.locator('.tape[data-id="radar"]')).toHaveClass(/gone/);
+  await expect(page.locator('.tape[data-id="stok"]')).toHaveClass(/gone/);
 });
 
 test("başka kaset takılınca öncekisi otomatik çıkar", async ({ page }) => {
@@ -148,7 +148,7 @@ test("proje açıkken dar düzene geçip kapatınca kasetler rafa yerleşir (dö
   await expect.poll(() => inViewport(page), { timeout: 5000 }).toBe(true);
   await page.keyboard.press("Escape");
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(page.locator("#tray .tape")).toHaveCount(9);
+  await expect(page.locator("#tray .tape")).toHaveCount(8);
   await expect(page.locator('#tray .tape[data-id="tbh"]')).toBeVisible();
 });
 
@@ -161,6 +161,6 @@ test("hareketi azalt: dar düzende açıp genişe geçince kapatınca kaset dü�
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.keyboard.press("Escape");
   await expect(page.locator("#screenUi")).toBeHidden();
-  await expect(page.locator("#tapeBtns .tape")).toHaveCount(9);
+  await expect(page.locator("#tapeBtns .tape")).toHaveCount(8);
   await expect(page.locator('#tapeBtns .tape[data-id="tbh"]')).toBeVisible();
 });

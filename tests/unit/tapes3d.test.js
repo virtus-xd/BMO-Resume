@@ -5,7 +5,7 @@ import { PROJECTS } from "../../src/data/projects.js";
 import { loc } from "../../src/data/i18n.js";
 
 const okey = PROJECTS.find((p) => p.id === "okey");
-const radar = PROJECTS.find((p) => p.id === "radar");
+const esp32 = PROJECTS.find((p) => p.id === "esp32");
 
 describe("createTape3D", () => {
   let getContext;
@@ -21,11 +21,11 @@ describe("createTape3D", () => {
   });
 
   it("setLabel dili değiştirince etiket satırları wrapTitle(…, 12) ile aynı", () => {
-    const tape = createTape3D(radar, "tr");
+    const tape = createTape3D(esp32, "tr");
     const label = tape.group.getObjectByName("label");
-    expect(label.userData.lines).toEqual(wrapTitle(loc("tr", radar.title), 12));
+    expect(label.userData.lines).toEqual(wrapTitle(loc("tr", esp32.title), 12));
     tape.setLabel("en");
-    expect(label.userData.lines).toEqual(wrapTitle(loc("en", radar.title), 12));
+    expect(label.userData.lines).toEqual(wrapTitle(loc("en", esp32.title), 12));
   });
 
   it("uzun başlık iki satıra sarılır", () => {

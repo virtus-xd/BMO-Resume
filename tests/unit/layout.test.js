@@ -82,8 +82,8 @@ describe("yerleşim sabitleri", () => {
   it("her proje için bir kaset yuvası var (fazla proje odada sessizce kaybolmaz)", () => {
     expect(TAPE_SLOTS.length).toBeGreaterThanOrEqual(PROJECTS.length);
   });
-  it("9 kaset yuvası zeminde ve BMO'ya 0.95–2.4 birim uzaklıkta", () => {
-    expect(TAPE_SLOTS).toHaveLength(9);
+  it("8 kaset yuvası zeminde ve BMO'ya 0.95–2.4 birim uzaklıkta", () => {
+    expect(TAPE_SLOTS).toHaveLength(8);
     const b = new Vector3(...BMO.position);
     TAPE_SLOTS.forEach((s) => {
       expect(s.position[1]).toBe(0);

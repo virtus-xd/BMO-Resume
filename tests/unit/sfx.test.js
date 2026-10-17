@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { songFor, createSfx } from "../../src/audio/sfx.js";
 
-const IDS = ["hakkimda", "okey", "tbh", "davetiye", "oxxo", "stok", "radar", "esp32", "jarvis"];
+const IDS = ["hakkimda", "okey", "tbh", "davetiye", "oxxo", "stok", "esp32", "jarvis"];
 const lead = (s) => s.notes.filter((n) => n.voice === "lead");
 
 describe("songFor (kaset ezgisi)", () => {
